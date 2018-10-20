@@ -1,3 +1,20 @@
+window.addEventListener('message', function(event) {
+  if (event.source != window)
+    return;
+
+  if (event.data.type) {
+    //let port = chrome.runtime.connect();
+    if (event.data.type == 'uiDMSendMessage') {
+      console.log(`Request to encrypt: ${event.data.e.text}`);
+      event.data.e.text = event.data.e.text + '#e';
+      window.postMessage({ type: 'uiDMSendMessage_r', e: event.data.e }, '*');
+    }
+    else if (event.data.type == 'uiDMDialogOpenedConversation') {
+      console.log(`New conversation: ${event.data.e.recipient}`);
+    }
+  }
+}, false);
+
 let s = document.createElement('script');
 s.innerHTML = `
 // Remember to console.trace()!
@@ -37,16 +54,33 @@ function getDMTextbox() {
   return findDMTextbox().instance.$text[0].textContent;
 }
 
+var uiDMSendMessageCallback;
+var oldT;
+var listener = function(event) {
+  if (event.source != window)
+    return;
+
+  if (event.data.type && (event.data.type == 'uiDMSendMessage_r')) {
+    e = event.data.e;
+    //console.trace(e);
+    uiDMSendMessageCallback(oldT, e);
+  }
+};
+
 function uiDMSendMessageEventIntercept(beforeEvent) {
   var sendDMComponent = findSendDMComponent();
   for (var i = 0; i < sendDMComponent.events.length; i++) {
     if (sendDMComponent.events[i].type.indexOf('uiDMSendMessage') != -1) {
       var oldCallback = sendDMComponent.events[i].callback;
+      uiDMSendMessageCallback = oldCallback;
       $(document).off('uiDMSendMessage', undefined, oldCallback);
       $(document).on('uiDMSendMessage', (t, e) => {
         beforeEvent(t, e);
-        oldCallback(t, e);
+        oldT = t;
+        //oldCallback(t, e);
       });
+      window.removeEventListener('message', listener);
+      window.addEventListener('message', listener, false);
       //console.trace(sendDMComponent);
     }
   }
@@ -57,10 +91,12 @@ var jqueryWaitInterval = setInterval(() => {
     clearInterval(jqueryWaitInterval);
     //console.trace('jQuery found');
     $(document).on('uiDMDialogOpenedConversation', (t, e) => {
-      console.trace('Entered new DM conversation: ');
-      console.trace(e.recipient);
+      //console.trace('Entered new DM conversation: ');
+      //console.trace(e.recipient);
+      window.postMessage({ type: 'uiDMDialogOpenedConversation', e: e }, '*');
       uiDMSendMessageEventIntercept((t, e) => {
-        console.trace(e);
+        window.postMessage({ type: 'uiDMSendMessage', e: e }, '*');
+        //console.trace(e);
       });
     });
   }
