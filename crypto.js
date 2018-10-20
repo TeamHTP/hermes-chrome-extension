@@ -65,3 +65,8 @@ module.exports.decryptMessage = (messageWithNonce, theirPublicKeyBase64, mySecre
   // Return message as UTF8
   return encodeUTF8(decryptedMessage);
 };
+
+module.exports.decodeUTF8 = decodeUTF8;
+module.exports.encodeUTF8 = encodeUTF8;
+module.exports.decodeBase64 = decodeBase64;
+module.exports.encodeBase64 = encodeBase64;

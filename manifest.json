@@ -14,11 +14,14 @@
         "persistent": true
     },
     "content_scripts": [
-       {
-         "matches": ["*://twitter.com/*"],
-         "js": ["twitter.js"],
-         "run_at": "document_start"
-       }
+        {
+          "matches": ["*://twitter.com/*"],
+          "js": [
+            "cryptobundle.js",
+            "twitter.js"
+          ],
+          "run_at": "document_start"
+        }
      ],
     "manifest_version": 2
 }
