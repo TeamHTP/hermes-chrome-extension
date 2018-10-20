@@ -2,9 +2,17 @@
     "name": "Hermes",
     "version": "0.1.0",
     "description": "A social media private message encryption tool.",
+    "permissions": [
+      "webRequest",
+      "webRequestBlocking",
+      "*://twitter.com/"
+    ],
     "background": {
-        "scripts": ["background.js"],
-        "persistent": false
+        "scripts": [
+          "background.js",
+          "backgroundTwitter.js"
+        ],
+        "persistent": true
     },
     "manifest_version": 2
 }
