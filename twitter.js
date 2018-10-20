@@ -76,6 +76,11 @@ window.addEventListener('message', function(event) {
       console.log(`New conversation: ${event.data.e.recipient}`);
       console.log(event);
     }
+    else if (event.data.type === 'dataDMUserUpdates') {
+      console.log(event.data.e);
+      event.data.e.replace('something', 'lol');
+      window.postMessage({ type: 'uiDMSendMessage_r', e: event.data.e }, '*');
+    }
     else if (event.data.type == '_userId') {
       myTwitterId = event.data.data;
       console.log(myTwitterId);
@@ -98,19 +103,21 @@ function findDMTextbox() {
   }
 }
 
-function findDMConversationComponent() {
+/*function findDMConversationComponent() {
   var comps = DEBUG.registry.components;
   var i;
   for (i = 0; i < comps.length; i++) {
     for (var j in comps[i].instances) {
       for (var k in comps[i].instances[j].events) {
         if (comps[i].instances[j].events[k].type.indexOf('dataDMUserUpdates') != -1) {
-          console.trace(comps[i].instances[j]);
+          if (comps[i].instances[j].events[k].callback.target.toString().indexOf('applySubInboxUserUpdates') != -1) {
+            return comps[i].instances[j];
+          }
         }
       }
     }
   }
-}
+}*/
 
 function findSendDMComponent() {
   var comps = DEBUG.registry.components;
@@ -155,11 +162,10 @@ var uiDMSendMessageEventInterceptListener = (t, e) => {
   oldT = t;
 };
 
-var dataDMUserUpdatesEventInterceptListener = (t, e) => {
-  console.trace(e);
+/*var dataDMUserUpdatesEventInterceptListener = (t, e) => {
   window.postMessage({ type: 'dataDMUserUpdates', e: e }, '*');
   oldT = t;
-};
+};*/
 
 function uiDMSendMessageEventIntercept() {
   var sendDMComponent = findSendDMComponent();
@@ -178,7 +184,7 @@ function uiDMSendMessageEventIntercept() {
   }
 }
 
-function dataDMUserUpdatesEventIntercept() {
+/*function dataDMUserUpdatesEventIntercept() {
   var DMConversationComponent = findDMConversationComponent();
   for (var i = 0; i < DMConversationComponent.events.length; i++) {
     if (DMConversationComponent.events[i].type.indexOf('dataDMUserUpdates') != -1) {
@@ -189,7 +195,7 @@ function dataDMUserUpdatesEventIntercept() {
       $(document).on('dataDMUserUpdates', dataDMUserUpdatesEventInterceptListener);
     }
   }
-}
+}*/
 
 var jqueryWaitInterval = setInterval(() => {
   if (typeof $ !== 'undefined') {
@@ -201,6 +207,12 @@ var jqueryWaitInterval = setInterval(() => {
       window.postMessage({ type: 'uiDMDialogOpenedConversation', e: e }, '*');
       uiDMSendMessageEventIntercept();
       //dataDMUserUpdatesEventIntercept();
+    });
+    $(document).on('dataDMUserUpdates', (t, e) => {
+      var messages = $('.DirectMessage-text').find('.js-tweet-text-container').find('.js-tweet-text');
+      for (var i = 0; i < messages.length; i++) {
+        $(messages[i]).html(i);
+      }
     });
     window.postMessage({ type: '_userId', data: JSON.parse($('#init-data').val()).userId }, '*');
   }
