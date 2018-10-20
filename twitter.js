@@ -24,12 +24,19 @@ function getMySecretKey() {
 }
 
 function encryptMessage(message) {
-  console.log(getTheirPublicKey(), getMySecretKey());
   return HermesCrypto.encryptMessage(message, getTheirPublicKey(), getMySecretKey());
 }
 
 function encryptMessageForSelf(message) {
   return HermesCrypto.encryptMessage(message, getMyPublicKey(), getMySecretKey());
+}
+
+function decryptMessage(message) {
+  return HermesCrypto.decryptMessage(message, getTheirPublicKey(), getMySecretKey());
+}
+
+function decryptMessageForSelf(message) {
+  return HermesCrypto.decryptMessage(message, getMyPublicKey(), getMySecretKey());
 }
 
 function lookupTwitterId(id) {
@@ -55,9 +62,7 @@ window.addEventListener('message', function(event) {
       //console.log(`Request to encrypt: ${event.data.e.text}`);
       if (getTheirPublicKey().length != 0) {
         var message = event.data.e.text;
-        event.data.e.text = `HERMES_A:${encryptMessage(message)}`;
-        window.postMessage({ type: 'uiDMSendMessage_r', e: event.data.e }, '*');
-        event.data.e.text = `HERMES_B:${encryptMessageForSelf(message)}`;
+        event.data.e.text = `HERMES_A:${encryptMessage(message)}\nHERMES_B:${encryptMessageForSelf(message)}`;
         window.postMessage({ type: 'uiDMSendMessage_r', e: event.data.e }, '*');
       }
     }
@@ -76,14 +81,13 @@ window.addEventListener('message', function(event) {
       console.log(`New conversation: ${event.data.e.recipient}`);
       console.log(event);
     }
-    else if (event.data.type === 'dataDMUserUpdates') {
-      console.log(event.data.e);
-      event.data.e.replace('something', 'lol');
-      window.postMessage({ type: 'uiDMSendMessage_r', e: event.data.e }, '*');
+    else if (event.data.type === 'directMessage') {
+      window.postMessage({ type: 'directMessage_r', id: event.data.id, text: event.data.id }, '*');
+      //console.log(event.data);
     }
     else if (event.data.type == '_userId') {
       myTwitterId = event.data.data;
-      console.log(myTwitterId);
+      //console.log(myTwitterId);
     }
   }
 }, false);
@@ -102,22 +106,6 @@ function findDMTextbox() {
     }
   }
 }
-
-/*function findDMConversationComponent() {
-  var comps = DEBUG.registry.components;
-  var i;
-  for (i = 0; i < comps.length; i++) {
-    for (var j in comps[i].instances) {
-      for (var k in comps[i].instances[j].events) {
-        if (comps[i].instances[j].events[k].type.indexOf('dataDMUserUpdates') != -1) {
-          if (comps[i].instances[j].events[k].callback.target.toString().indexOf('applySubInboxUserUpdates') != -1) {
-            return comps[i].instances[j];
-          }
-        }
-      }
-    }
-  }
-}*/
 
 function findSendDMComponent() {
   var comps = DEBUG.registry.components;
@@ -149,10 +137,15 @@ var listener = function(event) {
   if (event.source != window)
     return;
 
-  if (event.data.type && (event.data.type == 'uiDMSendMessage_r')) {
-    e = event.data.e;
-    //console.trace(e);
-    uiDMSendMessageCallback(oldT, e);
+  if (event.data.type) {
+    if (event.data.type == 'uiDMSendMessage_r') {
+      e = event.data.e;
+      //console.trace(e);
+      uiDMSendMessageCallback(oldT, e);
+    }
+    else if (event.data.type == 'directMessage_r') {
+      $('.DirectMessage[data-message-id=' + event.data.id + ']').find('p.js-tweet-text').html(event.data.text);
+    }
   }
 };
 
@@ -161,11 +154,6 @@ var uiDMSendMessageEventInterceptListener = (t, e) => {
   window.postMessage({ type: 'uiDMSendMessage', e: e }, '*');
   oldT = t;
 };
-
-/*var dataDMUserUpdatesEventInterceptListener = (t, e) => {
-  window.postMessage({ type: 'dataDMUserUpdates', e: e }, '*');
-  oldT = t;
-};*/
 
 function uiDMSendMessageEventIntercept() {
   var sendDMComponent = findSendDMComponent();
@@ -184,19 +172,6 @@ function uiDMSendMessageEventIntercept() {
   }
 }
 
-/*function dataDMUserUpdatesEventIntercept() {
-  var DMConversationComponent = findDMConversationComponent();
-  for (var i = 0; i < DMConversationComponent.events.length; i++) {
-    if (DMConversationComponent.events[i].type.indexOf('dataDMUserUpdates') != -1) {
-      var dataDMUserUpdatesCallback = DMConversationComponent.events[i].callback;
-      $(document).off('dataDMUserUpdates', undefined, dataDMUserUpdatesCallback);
-
-      $(document).off('dataDMUserUpdates', dataDMUserUpdatesEventInterceptListener);
-      $(document).on('dataDMUserUpdates', dataDMUserUpdatesEventInterceptListener);
-    }
-  }
-}*/
-
 var jqueryWaitInterval = setInterval(() => {
   if (typeof $ !== 'undefined') {
     clearInterval(jqueryWaitInterval);
@@ -206,12 +181,13 @@ var jqueryWaitInterval = setInterval(() => {
       //console.trace(e.recipient);
       window.postMessage({ type: 'uiDMDialogOpenedConversation', e: e }, '*');
       uiDMSendMessageEventIntercept();
-      //dataDMUserUpdatesEventIntercept();
     });
     $(document).on('dataDMUserUpdates', (t, e) => {
-      var messages = $('.DirectMessage-text').find('.js-tweet-text-container').find('.js-tweet-text');
+      var messages = $('.DirectMessage');
       for (var i = 0; i < messages.length; i++) {
-        $(messages[i]).html(i);
+        var id = $(messages[i]).attr('data-message-id');
+        var text = $(messages[i]).find('p.js-tweet-text').html();
+        window.postMessage({ type: 'directMessage', id: id, text: text }, '*');
       }
     });
     window.postMessage({ type: '_userId', data: JSON.parse($('#init-data').val()).userId }, '*');
