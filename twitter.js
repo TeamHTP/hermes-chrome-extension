@@ -19,7 +19,7 @@ function findSendDMComponent() {
   for (i = 0; i < comps.length; i++) {
     for (var j in comps[i].instances) {
       for (var k in comps[i].instances[j].events) {
-        if (comps[i].instances[j].events[k].type === 'uiDMSendMessage dataDMDialogSendMessageRetry') {
+        if (comps[i].instances[j].events[k].type.indexOf('uiDMSendMessage') != -1) {
           if (comps[i].instances[j].instance.attr.hasOwnProperty('noShowError')) {
             return comps[i].instances[j];
           }
@@ -41,16 +41,30 @@ function uiDMSendMessageEventIntercept(beforeEvent) {
   var sendDMComponent = findSendDMComponent();
   for (var i = 0; i < sendDMComponent.events.length; i++) {
     if (sendDMComponent.events[i].type.indexOf('uiDMSendMessage') != -1) {
-      console.trace('event found');
-      var oldTarget = sendDMComponent.events[i].callback.target;
-      sendDMComponent.events[i].callback.target = (t, e) => {
+      var oldCallback = sendDMComponent.events[i].callback;
+      $(document).off('uiDMSendMessage', undefined, oldCallback);
+      $(document).on('uiDMSendMessage', (t, e) => {
         beforeEvent(t, e);
-        console.trace(t);
-        oldTarget(t, e);
-      }
-      console.trace(sendDMComponent);
+        oldCallback(t, e);
+      });
+      //console.trace(sendDMComponent);
     }
   }
 }
+
+var jqueryWaitInterval = setInterval(() => {
+  if (typeof $ !== 'undefined') {
+    clearInterval(jqueryWaitInterval);
+    //console.trace('jQuery found');
+    $(document).on('uiDMDialogOpenedConversation', (t, e) => {
+      console.trace('Entered new DM conversation: ');
+      console.trace(e.recipient);
+      uiDMSendMessageEventIntercept((t, e) => {
+        console.trace(e);
+      });
+    });
+  }
+}, 500);
+
 `;
 document.documentElement.appendChild(s);
