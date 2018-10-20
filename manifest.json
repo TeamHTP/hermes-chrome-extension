@@ -3,12 +3,14 @@
     "version": "0.1.0",
     "description": "A social media private message encryption tool.",
     "permissions": [
+      "storage",
       "webRequest",
       "webRequestBlocking",
       "*://twitter.com/"
     ],
     "background": {
         "scripts": [
+          "cryptobundle.js",
           "background.js"
         ],
         "persistent": true

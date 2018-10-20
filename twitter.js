@@ -1,7 +1,14 @@
 //Test
-var keyPair = HermesCrypto.generateKeyPair();
+var keyPair = {
+  publicKey: "",
+  secretKey: ""
+};
+chrome.storage.local.get(['publicKey', 'secretKey'], (result) => {
+  keyPair.publicKey = result.publicKey;
+  keyPair.secretKey = result.secretKey;
+});
 var keyPair2 = HermesCrypto.generateKeyPair();
-
+var myTwitterId = '';
 var theirPublicKey = '';
 
 function getTheirPublicKey() {
@@ -9,14 +16,15 @@ function getTheirPublicKey() {
 }
 
 function getMyPublicKey() {
-  return HermesCrypto.encodeBase64(keyPair.publicKey);
+  return keyPair.publicKey;
 }
 
 function getMySecretKey() {
-  return HermesCrypto.encodeBase64(keyPair.secretKey);
+  return keyPair.secretKey;
 }
 
 function encryptMessage(message) {
+  console.log(getTheirPublicKey(), getMySecretKey());
   return HermesCrypto.encryptMessage(message, getTheirPublicKey(), getMySecretKey());
 }
 
@@ -25,7 +33,16 @@ function encryptMessageForSelf(message) {
 }
 
 function lookupTwitterId(id) {
-  return HermesCrypto.encodeBase64(keyPair2.publicKey);
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", `http://142.93.82.253/user/find?uid=${id}`, false);
+  xhr.send();
+  var response = JSON.parse(xhr.responseText);
+  if (response[0] === 'No user') {
+    return "";
+  }
+  else {
+    return response;
+  }
 }
 
 window.addEventListener('message', function(event) {
@@ -45,9 +62,23 @@ window.addEventListener('message', function(event) {
       }
     }
     else if (event.data.type == 'uiDMDialogOpenedConversation') {
-      var theirId = event.data.e.recipient.split('-')[1];
-      theirPublicKey = lookupTwitterId(theirId);
+      var conversation = event.data.e.recipient.split('-');
+      var publicKeys = [
+        lookupTwitterId(conversation[0]),
+        lookupTwitterId(conversation[1])
+      ];
+      if (publicKeys[0] === myTwitterId) {
+        theirPublicKey = publicKeys[1];
+      }
+      else if (publicKeys[1] === myTwitterId) {
+        theirPublicKey = publicKeys[0];
+      }
       console.log(`New conversation: ${event.data.e.recipient}`);
+      console.log(event);
+    }
+    else if (event.data.type == '_userId') {
+      myTwitterId = event.data.data;
+      console.log(myTwitterId);
     }
   }
 }, false);
@@ -171,6 +202,7 @@ var jqueryWaitInterval = setInterval(() => {
       uiDMSendMessageEventIntercept();
       //dataDMUserUpdatesEventIntercept();
     });
+    window.postMessage({ type: '_userId', data: JSON.parse($('#init-data').val()).userId }, '*');
   }
 }, 500);
 
