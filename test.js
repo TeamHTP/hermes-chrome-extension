@@ -26,7 +26,7 @@ function runTests() {
 function encryptDecrypt() {
   const myKeyPair = crypto.generateKeyPair();
   const theirKeyPair = crypto.generateKeyPair();
-  const messageUTF8 = 'Hello world';
+  const messageUTF8 = 'Hello world 1234!@#$';
 
   const encryptedBase64 = crypto.encryptMessage(messageUTF8, encodeBase64(theirKeyPair.publicKey), encodeBase64(myKeyPair.secretKey));
   const decryptedUTF8 = crypto.decryptMessage(encryptedBase64, encodeBase64(theirKeyPair.publicKey), encodeBase64(myKeyPair.secretKey));
