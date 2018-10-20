@@ -1,0 +1,15 @@
+{
+  "name": "hermes",
+  "version": "0.1.0",
+  "description": "A social media private message encryption tool.",
+  "main": "",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "author": "HTP",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "tweetnacl": "^1.0.0",
+    "tweetnacl-util": "^0.15.0"
+  }
+}
