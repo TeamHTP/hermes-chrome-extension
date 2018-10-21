@@ -106,6 +106,7 @@ window.addEventListener('message', function(event) {
         }
         catch (err) {
           //TODO: Fail icon
+          lookupTwitterId(event.data.sender_id);
         }
       }
       //console.log(event.data);
