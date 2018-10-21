@@ -41,7 +41,7 @@ function decryptMessageForSelf(message) {
 
 function lookupTwitterId(id) {
   var xhr = new XMLHttpRequest();
-  xhr.open("GET", `http://142.93.82.253/user/find?uid=${id}`, false);
+  xhr.open('GET', `https://hermes-v1.hyt.space/api/v1/twitter/public_key/get?user_id=${id}`, false);
   xhr.send();
   var response = JSON.parse(xhr.responseText);
   if (response[0] === 'No user') {
@@ -145,6 +145,7 @@ var listener = function(event) {
     }
     else if (event.data.type == 'directMessage_r') {
       $('.DirectMessage[data-message-id=' + event.data.id + ']').find('p.js-tweet-text').html(event.data.text);
+      $('.DirectMessage[data-message-id=' + event.data.id + ']').find('.DMReadReceipt-check').html('<span class="Icon Icon--checkLight"></span><span class="Icon Icon--protected" style="color: inherit;"></span>');
     }
   }
 };
@@ -172,6 +173,15 @@ function uiDMSendMessageEventIntercept() {
   }
 }
 
+var attemptDecryptMessages = (t, e) => {
+  var messages = $('.DirectMessage');
+  for (var i = 0; i < messages.length; i++) {
+    var id = $(messages[i]).attr('data-message-id');
+    var text = $(messages[i]).find('p.js-tweet-text').html();
+    window.postMessage({ type: 'directMessage', id: id, text: text }, '*');
+  }
+};
+
 var jqueryWaitInterval = setInterval(() => {
   if (typeof $ !== 'undefined') {
     clearInterval(jqueryWaitInterval);
@@ -182,14 +192,8 @@ var jqueryWaitInterval = setInterval(() => {
       window.postMessage({ type: 'uiDMDialogOpenedConversation', e: e }, '*');
       uiDMSendMessageEventIntercept();
     });
-    $(document).on('dataDMUserUpdates', (t, e) => {
-      var messages = $('.DirectMessage');
-      for (var i = 0; i < messages.length; i++) {
-        var id = $(messages[i]).attr('data-message-id');
-        var text = $(messages[i]).find('p.js-tweet-text').html();
-        window.postMessage({ type: 'directMessage', id: id, text: text }, '*');
-      }
-    });
+    $(document).after('uiDMDialogOpenedConversation', attemptDecryptMessages);
+    $(document).on('dataDMUserUpdates', attemptDecryptMessages);
     window.postMessage({ type: '_userId', data: JSON.parse($('#init-data').val()).userId }, '*');
   }
 }, 500);
