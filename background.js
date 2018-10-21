@@ -6,8 +6,12 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+let currentTabId;
+let tabIcons = {};
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === 'changeIcon') {
+    tabIcons[currentTabId] = msg.value;
     chrome.browserAction.setIcon({
       path: {
         "16": `assets/${msg.value}.png`,
@@ -17,4 +21,25 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       }
     });
   }
+});
+
+function updateIconFromTab() {
+  chrome.browserAction.setIcon({
+    path: {
+      "16": `assets/${tabIcons[currentTabId] || 'unsupported'}.png`,
+      "32": `assets/${tabIcons[currentTabId] || 'unsupported'}2x.png`,
+      "48": `assets/${tabIcons[currentTabId] || 'unsupported'}3x.png`,
+      "128": `assets/${tabIcons[currentTabId] || 'unsupported'}8x.png`
+    }
+  });
+}
+
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  currentTabId = activeInfo.tabId;
+  updateIconFromTab();
+});
+
+chrome.tabs.onUpdated.addListener((tabId) => {
+  tabIcons[tabId] = 'unsupported';
+  updateIconFromTab();
 });

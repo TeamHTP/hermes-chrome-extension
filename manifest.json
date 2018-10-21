@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "description": "A social media private message encryption tool.",
   "permissions": [
+    "background",
     "storage",
+    "tabs",
     "*://twitter.com/"
   ],
   "browser_action": {
