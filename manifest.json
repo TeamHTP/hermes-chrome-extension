@@ -1,29 +1,43 @@
 {
-    "name": "Hermes",
-    "version": "0.1.0",
-    "description": "A social media private message encryption tool.",
-    "permissions": [
-      "storage",
-      "webRequest",
-      "webRequestBlocking",
-      "*://twitter.com/"
+  "name": "Hermes",
+  "version": "0.1.0",
+  "description": "A social media private message encryption tool.",
+  "permissions": [
+    "storage",
+    "*://twitter.com/"
+  ],
+  "background": {
+    "scripts": [
+      "cryptobundle.js",
+      "background.js"
     ],
-    "background": {
-        "scripts": [
-          "cryptobundle.js",
-          "background.js"
-        ],
-        "persistent": true
-    },
-    "content_scripts": [
-        {
-          "matches": ["*://twitter.com/*"],
-          "js": [
-            "cryptobundle.js",
-            "twitter.js"
-          ],
-          "run_at": "document_start"
-        }
-     ],
-    "manifest_version": 2
+    "persistent": true
+  },
+  "browser_action": {
+    "default_title": "Hermes Social Encryption",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "assets/unsupported.png",
+      "32": "assets/unsupported2x.png",
+      "48": "assets/unsupported3x.png",
+      "128": "assets/unsupported8x.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://twitter.com/*"],
+      "js": [
+        "cryptobundle.js",
+        "twitter.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "icons": {
+    "16": "assets/locked.png",
+    "32": "assets/locked2x.png",
+    "48": "assets/locked3x.png",
+    "128": "assets/locked8x.png"
+  },
+  "manifest_version": 2
 }

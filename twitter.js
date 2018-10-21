@@ -1,4 +1,10 @@
 //Test
+
+chrome.runtime.sendMessage({
+  action: 'changeIcon',
+  value: 'unlocked'
+});
+
 var keyPair = {
   publicKey: "",
   secretKey: ""
