@@ -39,17 +39,27 @@ function decryptMessageForSelf(message) {
   return HermesCrypto.decryptMessage(message, getMyPublicKey(), getMySecretKey());
 }
 
-function lookupTwitterId(id) {
+function lookupTwitterId(id, callback) {
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', `https://hermes-v1.hyt.space/api/v1/twitter/public_key/get?user_id=${id}`, false);
+  xhr.open('GET', `https://hermes-v1.hyt.space/api/v1/twitter/public_key/get?twitter_user_id=${id}`, true);
   xhr.send();
-  var response = JSON.parse(xhr.responseText);
-  if (response[0] === 'No user') {
-    return "";
-  }
-  else {
-    return response;
-  }
+  xhr.onreadystatechange = function () {
+    if(xhr.readyState === 4) {
+      if (xhr.status === 404) {
+        theirPublicKey = '';
+      }
+      else if (xhr.status === 200) {
+        theirPublicKey = JSON.parse(xhr.responseText).data.publicKey;
+      }
+      callback(theirPublicKey);
+    }
+  };
+}
+
+function pairTwitterUserIdWithPublicKey(id, publicKey) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', `https://hermes-v1.hyt.space/api/v1/twitter/public_key/update?twitter_user_id=${id}&public_key=${publicKey}`, true);
+  xhr.send();
 }
 
 window.addEventListener('message', function(event) {
@@ -65,19 +75,19 @@ window.addEventListener('message', function(event) {
         event.data.e.text = `HERMES_A:${encryptMessage(message)}\nHERMES_B:${encryptMessageForSelf(message)}`;
         window.postMessage({ type: 'uiDMSendMessage_r', e: event.data.e }, '*');
       }
+      else {
+        window.postMessage({ type: 'uiDMSendMessage_r', e: event.data.e }, '*');
+      }
     }
     else if (event.data.type == 'uiDMDialogOpenedConversation') {
       var conversation = event.data.e.recipient.split('-');
-      var publicKeys = [
-        lookupTwitterId(conversation[0]),
-        lookupTwitterId(conversation[1])
-      ];
-      if (publicKeys[0] === myTwitterId) {
-        theirPublicKey = publicKeys[1];
+      if (conversation[0] === myTwitterId) {
+        lookupTwitterId(conversation[1]);
       }
-      else if (publicKeys[1] === myTwitterId) {
-        theirPublicKey = publicKeys[0];
+      else if (conversation[1] === myTwitterId) {
+        lookupTwitterId(conversation[0]);
       }
+
       console.log(`New conversation: ${event.data.e.recipient}`);
       console.log(event);
     }
@@ -87,6 +97,7 @@ window.addEventListener('message', function(event) {
     }
     else if (event.data.type == '_userId') {
       myTwitterId = event.data.data;
+      pairTwitterUserIdWithPublicKey(myTwitterId, getMyPublicKey());
       //console.log(myTwitterId);
     }
   }
