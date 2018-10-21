@@ -123,7 +123,7 @@ window.addEventListener('message', function(event) {
           //TODO: Fail icon
           if (!isOwnMessage) {
             lookupAttempts[event.data.id] = lookupAttempts[event.data.id] || 0;
-            if (lookupAttempts[event.data.id] < 5) {
+            if (lookupAttempts[event.data.id] < 2) {
               lookupAttempts[event.data.id]++;
               lookupTwitterId(event.data.sender_id);
             }
