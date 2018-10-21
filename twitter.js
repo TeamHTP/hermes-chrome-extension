@@ -96,11 +96,16 @@ window.addEventListener('message', function(event) {
       if (isHermesMessage) {
         var hermesA = event.data.text.split('\n')[0].substring(9);
         var hermesB = event.data.text.split('\n')[1].substring(9);
-        if (isOwnMessage) {
-          window.postMessage({ type: 'directMessage_r', id: event.data.id, text: decryptMessageForSelf(hermesB) }, '*');
+        try {
+          if (isOwnMessage) {
+            window.postMessage({ type: 'directMessage_r', id: event.data.id, text: decryptMessageForSelf(hermesB), own: isOwnMessage }, '*');
+          }
+          else {
+            window.postMessage({ type: 'directMessage_r', id: event.data.id, text: decryptMessage(hermesA), own: isOwnMessage }, '*');
+          }
         }
-        else {
-          window.postMessage({ type: 'directMessage_r', id: event.data.id, text: decryptMessage(hermesA) }, '*');
+        catch (err) {
+          //TODO: Fail icon
         }
       }
       //console.log(event.data);
@@ -166,8 +171,22 @@ var listener = function(event) {
       uiDMSendMessageCallback(oldT, e);
     }
     else if (event.data.type == 'directMessage_r') {
+      var encryptedIcon = \`
+      <span class="DirectMessage-action">
+        <button type="button" class="js-tooltip" title="Encrypted with Hermes" data-message-id="\${event.data.id}" aria-hidden="false">
+          <span class="Icon Icon--protected" style="color: inherit;"></span>
+        </button>
+      </span>
+      \`
       $('.DirectMessage[data-message-id=' + event.data.id + ']').find('p.js-tweet-text').html(event.data.text);
-      $('.DirectMessage[data-message-id=' + event.data.id + ']').find('.DMReadReceipt-check').html('<span class="Icon Icon--checkLight"></span><span class="Icon Icon--protected" style="color: inherit;"></span>');
+      var newHtml = $('.DirectMessage[data-message-id=' + event.data.id + ']').find('.DirectMessage-actions').html().replace(encryptedIcon, '');
+      $('.DirectMessage[data-message-id=' + event.data.id + ']').find('.DirectMessage-actions').html(newHtml);
+      if (event.data.own) {
+        $('.DirectMessage[data-message-id=' + event.data.id + ']').find('.DirectMessage-actions').append(encryptedIcon);
+      }
+      else {
+        $('.DirectMessage[data-message-id=' + event.data.id + ']').find('.DirectMessage-actions').prepend(encryptedIcon);
+      }
     }
   }
 };
@@ -196,13 +215,15 @@ function uiDMSendMessageEventIntercept() {
 }
 
 var attemptDecryptMessages = (t, e) => {
-  var messages = $('.DirectMessage');
-  for (var i = 0; i < messages.length; i++) {
-    var id = $(messages[i]).attr('data-message-id');
-    var sender_id = $(messages[i]).attr('data-sender-id');
-    var text = $(messages[i]).find('p.js-tweet-text').html();
-    window.postMessage({ type: 'directMessage', id: id, sender_id: sender_id, text: text }, '*');
-  }
+  setTimeout(() => {
+    var messages = $('.DirectMessage');
+    for (var i = 0; i < messages.length; i++) {
+      var id = $(messages[i]).attr('data-message-id');
+      var sender_id = $(messages[i]).attr('data-sender-id');
+      var text = $(messages[i]).find('p.js-tweet-text').html();
+      window.postMessage({ type: 'directMessage', id: id, sender_id: sender_id, text: text }, '*');
+    }
+  }, 100);
 };
 
 var jqueryWaitInterval = setInterval(() => {
