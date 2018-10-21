@@ -76,6 +76,7 @@ window.addEventListener('message', function(event) {
         window.postMessage({ type: 'uiDMSendMessage_r', e: event.data.e }, '*');
       }
       else {
+        console.log('No public key for recipient!!!');
         window.postMessage({ type: 'uiDMSendMessage_r', e: event.data.e }, '*');
       }
     }
@@ -107,10 +108,12 @@ window.addEventListener('message', function(event) {
         }
         catch (err) {
           //TODO: Fail icon
-          lookupAttempts[event.data.id] = lookupAttempts[event.data.id] || 0;
-          if (lookupAttempts[event.data.id] < 5) {
-            lookupAttempts[event.data.id]++;
-            lookupTwitterId(event.data.sender_id);
+          if (!isOwnMessage) {
+            lookupAttempts[event.data.id] = lookupAttempts[event.data.id] || 0;
+            if (lookupAttempts[event.data.id] < 5) {
+              lookupAttempts[event.data.id]++;
+              lookupTwitterId(event.data.sender_id);
+            }
           }
         }
       }
