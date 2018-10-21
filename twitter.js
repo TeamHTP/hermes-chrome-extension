@@ -50,6 +50,7 @@ function lookupTwitterId(id, callback) {
       }
       else if (xhr.status === 200) {
         theirPublicKey = JSON.parse(xhr.responseText).data.publicKey;
+        console.log('Found public key from Hermes API.');
       }
       callback(theirPublicKey);
     }
@@ -89,15 +90,18 @@ window.addEventListener('message', function(event) {
       }
 
       console.log(`New conversation: ${event.data.e.recipient}`);
-      console.log(event);
+      //console.log(event);
     }
     else if (event.data.type === 'directMessage') {
+      var isOwnMessage = event.data.sender_id == myTwitterId;
+      var isHermesMessage = event.data.text.match(/HERMES_A:.*\nHERMES_B:.*/g).length == 1;
       window.postMessage({ type: 'directMessage_r', id: event.data.id, text: event.data.id }, '*');
       //console.log(event.data);
     }
     else if (event.data.type == '_userId') {
       myTwitterId = event.data.data;
       pairTwitterUserIdWithPublicKey(myTwitterId, getMyPublicKey());
+      console.log('Pairing public key with Hermes API.');
       //console.log(myTwitterId);
     }
   }
@@ -188,8 +192,9 @@ var attemptDecryptMessages = (t, e) => {
   var messages = $('.DirectMessage');
   for (var i = 0; i < messages.length; i++) {
     var id = $(messages[i]).attr('data-message-id');
+    var sender_id = $(messages[i]).attr('data-sender-id');
     var text = $(messages[i]).find('p.js-tweet-text').html();
-    window.postMessage({ type: 'directMessage', id: id, text: text }, '*');
+    window.postMessage({ type: 'directMessage', id: id, sender_id: sender_id, text: text }, '*');
   }
 };
 
@@ -203,7 +208,6 @@ var jqueryWaitInterval = setInterval(() => {
       window.postMessage({ type: 'uiDMDialogOpenedConversation', e: e }, '*');
       uiDMSendMessageEventIntercept();
     });
-    $(document).after('uiDMDialogOpenedConversation', attemptDecryptMessages);
     $(document).on('dataDMUserUpdates', attemptDecryptMessages);
     window.postMessage({ type: '_userId', data: JSON.parse($('#init-data').val()).userId }, '*');
   }
