@@ -1,10 +1,15 @@
 chrome.runtime.onInstalled.addListener(() => {
+  generateAndStoreKeyPair();
+});
+
+function generateAndStoreKeyPair() {
   const keyPair = HermesCrypto.generateKeyPair();
   chrome.storage.local.set({
     publicKey: HermesCrypto.encodeBase64(keyPair.publicKey),
     secretKey: HermesCrypto.encodeBase64(keyPair.secretKey)
   });
-});
+  console.log('Generating and storing new key pair');
+}
 
 let currentTabId;
 let tabIcons = {};
@@ -20,6 +25,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         "128": `assets/${msg.value}8x.png`
       }
     });
+  }
+  else if (msg.action === 'regenKeyPair') {
+    generateAndStoreKeyPair();
   }
 });
 

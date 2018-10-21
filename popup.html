@@ -6,17 +6,28 @@
             body {
                 min-width: 400px;
                 padding: 15px 20px 5px 20px;
+                background: linear-gradient(-25deg, #006344, #b9d870);
+                background-size: 100% 100%;
+                color: #fff;
+            }
+            a {
+                color: #fff;
+                text-decoration: underline;
+            }
+            a:hover {
+                color: #fff;
             }
         </style>
     </head>
     <body>
-        <h1>Hermes Encryption</h1>
+        <div style="text-align: center; width: 100%;"><h1>HERMES</h1></div>
         <p>Drop-in encryption for your favorite social network</p>
         <ul>
-            <li>webpack - https://www.webpack.com</li>
-            <li>tweetnacl - https://www.tweetnacl.com</li>
-            <li>bootstrap - https://www.bootstrap.com</li>
+            <li>webpack - <a href="https://webpack.js.org" target="_blank">https://webpack.js.org</a></li>
+            <li>TweetNacl.js - <a href="https://tweetnacl.js.org" target="_blank">https://tweetnacl.js.org</a></li>
+            <li>bootstrap - <a href="https://getbootstrap.com" target="_blank">https://getbootstrap.com</a></li>
         </ul>
-        <p>Copyright (c) 2018, TeamHTP</p>
+        <p>Copyright (c) 2018,<br/>Tianyi Ma, Carter Nelson, Dominic Tassio<br/><a href="https://github.com/TeamHTP/hermes-chrome-extension" target="_blank">GitHub</a><a href="#" style="float: right;" id="generateKeyButton">Generate new keypair</a></p>
+        <script src="popup.js"></script>
     </body>
 </html>
