@@ -7,7 +7,6 @@ chrome.storage.local.get(['publicKey', 'secretKey'], (result) => {
   keyPair.publicKey = result.publicKey;
   keyPair.secretKey = result.secretKey;
 });
-var keyPair2 = HermesCrypto.generateKeyPair();
 var myTwitterId = '';
 var theirPublicKey = '';
 
@@ -39,7 +38,7 @@ function decryptMessageForSelf(message) {
   return HermesCrypto.decryptMessage(message, getMyPublicKey(), getMySecretKey());
 }
 
-function lookupTwitterId(id, callback) {
+function lookupTwitterId(id) {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', `https://hermes-v1.hyt.space/api/v1/twitter/public_key/get?twitter_user_id=${id}`, true);
   xhr.send();
@@ -52,14 +51,13 @@ function lookupTwitterId(id, callback) {
         theirPublicKey = JSON.parse(xhr.responseText).data.publicKey;
         console.log('Found public key from Hermes API.');
       }
-      callback(theirPublicKey);
     }
   };
 }
 
 function pairTwitterUserIdWithPublicKey(id, publicKey) {
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', `https://hermes-v1.hyt.space/api/v1/twitter/public_key/update?twitter_user_id=${id}&public_key=${publicKey}`, true);
+  xhr.open('GET', `https://hermes-v1.hyt.space/api/v1/twitter/public_key/update?twitter_user_id=${id}&public_key=${encodeURIComponent(publicKey)}`, true);
   xhr.send();
 }
 
@@ -96,8 +94,13 @@ window.addEventListener('message', function(event) {
       var isOwnMessage = event.data.sender_id == myTwitterId;
       var isHermesMessage = event.data.text.match(/HERMES_A:.*\nHERMES_B:.*/g);
       if (isHermesMessage) {
+        var hermesA = event.data.text.split('\n')[0].substring(9);
+        var hermesB = event.data.text.split('\n')[1].substring(9);
         if (isOwnMessage) {
-          window.postMessage({ type: 'directMessage_r', id: event.data.id, text: event.data.text }, '*');
+          window.postMessage({ type: 'directMessage_r', id: event.data.id, text: decryptMessageForSelf(hermesB) }, '*');
+        }
+        else {
+          window.postMessage({ type: 'directMessage_r', id: event.data.id, text: decryptMessage(hermesA) }, '*');
         }
       }
       //console.log(event.data);
