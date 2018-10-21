@@ -1,10 +1,3 @@
-//Test
-
-chrome.runtime.sendMessage({
-  action: 'changeIcon',
-  value: 'unlocked'
-});
-
 var keyPair = {
   publicKey: "",
   secretKey: ""
@@ -57,6 +50,10 @@ function lookupTwitterId(id) {
       else if (xhr.status === 200) {
         theirPublicKey = JSON.parse(xhr.responseText).data.publicKey;
         console.log('Found public key from Hermes API.');
+        chrome.runtime.sendMessage({
+          action: 'changeIcon',
+          value: 'locked'
+        });
       }
     }
   };
@@ -97,6 +94,16 @@ window.addEventListener('message', function(event) {
 
       console.log(`New conversation: ${event.data.e.recipient}`);
       //console.log(event);
+      chrome.runtime.sendMessage({
+        action: 'changeIcon',
+        value: 'unlocked'
+      });
+    }
+    else if (event.data.type == 'notInDMConversation') {
+      chrome.runtime.sendMessage({
+        action: 'changeIcon',
+        value: 'unsupported'
+      });
     }
     else if (event.data.type === 'directMessage') {
       var isOwnMessage = event.data.sender_id == myTwitterId;
@@ -252,6 +259,12 @@ var jqueryWaitInterval = setInterval(() => {
       uiDMSendMessageEventIntercept();
     });
     $(document).on('dataDMUserUpdates', attemptDecryptMessages);
+    $(document).on('uiDMDialogOpenedConversationList', (t, e) => {
+      window.postMessage({ type: 'notInDMConversation', e: e }, '*');
+    });
+    $(document).on('uiDMDialogClosed', (t, e) => {
+      window.postMessage({ type: 'notInDMConversation', e: e }, '*');
+    });
     window.postMessage({ type: '_userId', data: JSON.parse($('#init-data').val()).userId }, '*');
   }
 }, 500);
