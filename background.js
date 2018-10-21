@@ -17,37 +17,41 @@ let tabIcons = {};
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === 'changeIcon') {
     tabIcons[currentTabId] = msg.value;
-    chrome.browserAction.setIcon({
-      path: {
-        "16": `assets/${msg.value}.png`,
-        "32": `assets/${msg.value}2x.png`,
-        "48": `assets/${msg.value}3x.png`,
-        "128": `assets/${msg.value}8x.png`
-      }
-    });
+    updateIcon(msg.value);
   }
   else if (msg.action === 'regenKeyPair') {
     generateAndStoreKeyPair();
   }
 });
 
-function updateIconFromTab() {
+function updateIcon(type) {
   chrome.browserAction.setIcon({
     path: {
-      "16": `assets/${tabIcons[currentTabId] || 'unsupported'}.png`,
-      "32": `assets/${tabIcons[currentTabId] || 'unsupported'}2x.png`,
-      "48": `assets/${tabIcons[currentTabId] || 'unsupported'}3x.png`,
-      "128": `assets/${tabIcons[currentTabId] || 'unsupported'}8x.png`
+      "16": `assets/${type}.png`,
+      "32": `assets/${type}2x.png`,
+      "48": `assets/${type}3x.png`,
+      "128": `assets/${type}8x.png`
     }
   });
+  switch (type) {
+    case 'unsupported':
+      chrome.browserAction.setTitle({ title: 'Hermes is idle' });
+      break;
+    case 'unlocked':
+      chrome.browserAction.setTitle({ title: 'Hermes was unable to handshake with your recipient' });
+      break;
+    case 'locked':
+      chrome.browserAction.setTitle({ title: 'Hermes is encrypting your messages' });
+      break;
+  }
 }
 
 chrome.tabs.onActivated.addListener((activeInfo) => {
   currentTabId = activeInfo.tabId;
-  updateIconFromTab();
+  updateIcon(tabIcons[currentTabId] || 'unsupported');
 });
 
 chrome.tabs.onUpdated.addListener((tabId) => {
   tabIcons[tabId] = 'unsupported';
-  updateIconFromTab();
+  updateIcon(tabIcons[currentTabId] || 'unsupported');
 });
