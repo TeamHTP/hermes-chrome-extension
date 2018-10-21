@@ -9,6 +9,7 @@ chrome.storage.local.get(['publicKey', 'secretKey'], (result) => {
 });
 var myTwitterId = '';
 var theirPublicKey = '';
+var lookupAttempts = {};
 
 function getTheirPublicKey() {
   return theirPublicKey;
@@ -40,7 +41,7 @@ function decryptMessageForSelf(message) {
 
 function lookupTwitterId(id) {
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', `https://hermes-v1.hyt.space/api/v1/twitter/public_key/get?twitter_user_id=${id}`, true);
+  xhr.open('GET', `https://hermes-v0.hyt.space/api/v1/twitter/public_key/get?twitter_user_id=${id}`, true);
   xhr.send();
   xhr.onreadystatechange = function () {
     if(xhr.readyState === 4) {
@@ -57,7 +58,7 @@ function lookupTwitterId(id) {
 
 function pairTwitterUserIdWithPublicKey(id, publicKey) {
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', `https://hermes-v1.hyt.space/api/v1/twitter/public_key/update?twitter_user_id=${id}&public_key=${encodeURIComponent(publicKey)}`, true);
+  xhr.open('GET', `https://hermes-v0.hyt.space/api/v1/twitter/public_key/update?twitter_user_id=${id}&public_key=${encodeURIComponent(publicKey)}`, true);
   xhr.send();
 }
 
@@ -106,7 +107,11 @@ window.addEventListener('message', function(event) {
         }
         catch (err) {
           //TODO: Fail icon
-          lookupTwitterId(event.data.sender_id);
+          lookupAttempts[event.data.id] = lookupAttempts[event.data.id] || 0;
+          if (lookupAttempts[event.data.id] < 5) {
+            lookupAttempts[event.data.id]++;
+            lookupTwitterId(event.data.sender_id);
+          }
         }
       }
       //console.log(event.data);
