@@ -6,13 +6,6 @@
     "storage",
     "*://twitter.com/"
   ],
-  "background": {
-    "scripts": [
-      "cryptobundle.js",
-      "background.js"
-    ],
-    "persistent": true
-  },
   "browser_action": {
     "default_title": "Hermes Social Encryption",
     "default_popup": "popup.html",
@@ -22,6 +15,13 @@
       "48": "assets/unsupported3x.png",
       "128": "assets/unsupported8x.png"
     }
+  },
+  "background": {
+    "scripts": [
+      "cryptobundle.js",
+      "background.js"
+    ],
+    "persistent": true
   },
   "content_scripts": [
     {
