@@ -94,8 +94,12 @@ window.addEventListener('message', function(event) {
     }
     else if (event.data.type === 'directMessage') {
       var isOwnMessage = event.data.sender_id == myTwitterId;
-      var isHermesMessage = event.data.text.match(/HERMES_A:.*\nHERMES_B:.*/g).length == 1;
-      window.postMessage({ type: 'directMessage_r', id: event.data.id, text: event.data.id }, '*');
+      var isHermesMessage = event.data.text.match(/HERMES_A:.*\nHERMES_B:.*/g);
+      if (isHermesMessage) {
+        if (isOwnMessage) {
+          window.postMessage({ type: 'directMessage_r', id: event.data.id, text: event.data.text }, '*');
+        }
+      }
       //console.log(event.data);
     }
     else if (event.data.type == '_userId') {
