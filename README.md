@@ -1,7 +1,7 @@
 # hermes-chrome-extension
 
 <img src="https://github.com/TeamHTP/hermes-chrome-extension/raw/master/assets/Hermes_thumbnail.png" width="200" height="200">
-A social media private message encryption tool
+Drop-in encryption for your favorite social network.
 
 ### Development
 
@@ -9,6 +9,6 @@ A social media private message encryption tool
 
 2. ```$ npm install```
 
-3. ```$ webpack```
+3. ```$ npm run webpack```
 
 4. Load the extension into Chrome through <a href="chrome://extensions">chrome://extensions</a>

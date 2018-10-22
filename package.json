@@ -1,12 +1,13 @@
 {
   "name": "hermes",
-  "version": "0.1.0",
-  "description": "A social media private message encryption tool.",
+  "version": "0.2.0",
+  "description": "Drop-in encryption for your favorite social network.",
   "main": "",
   "scripts": {
-    "test": "node test.js"
+    "test": "node test.js",
+    "webpack": "webpack"
   },
-  "author": "HTP",
+  "author": "TeamHTP",
   "license": "GPL-3.0",
   "dependencies": {
     "tweetnacl": "^1.0.0",

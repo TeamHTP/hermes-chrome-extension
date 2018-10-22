@@ -1,8 +1,11 @@
+const path = require('path');
+
 module.exports = {
-  entry: './crypto.js',
+  mode: 'production',
+  entry: './webpackSrc/crypto.js',
   output: {
-    path: __dirname,
+    path: path.resolve(__dirname, 'webpackDist'),
     library: 'HermesCrypto',
-    filename: 'cryptobundle.js'
+    filename: 'cryptoBundle.js'
   }
 };

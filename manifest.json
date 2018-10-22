@@ -1,7 +1,7 @@
 {
   "name": "Hermes",
-  "version": "0.1.0",
-  "description": "A social media private message encryption tool.",
+  "version": "0.2.0",
+  "description": "Drop-in encryption for your favorite social network.",
   "permissions": [
     "background",
     "storage",
@@ -20,21 +20,22 @@
   },
   "background": {
     "scripts": [
-      "cryptobundle.js",
+      "webpackDist/cryptoBundle.js",
       "background.js"
     ],
-    "persistent": true
+    "persistent": false
   },
   "content_scripts": [
     {
       "matches": ["*://twitter.com/*"],
       "js": [
-        "cryptobundle.js",
+        "webpackDist/cryptoBundle.js",
         "twitter.js"
       ],
       "run_at": "document_start"
     }
   ],
+  "web_accessible_resources": ["injectTwitter.js"],
   "icons": {
     "16": "assets/locked.png",
     "32": "assets/locked2x.png",
