@@ -37,6 +37,21 @@ function getDMTextbox() {
 
 var uiDMSendMessageCallback;
 var oldT;
+var encryptedIcon = `
+<span class="DirectMessage-actio hermes-iconn">
+  <button type="button" class="js-tooltip" title="Encrypted with Hermes" data-message-id="${event.data.id}" aria-hidden="false">
+    <span class="Icon Icon--protected" style="color: inherit;"></span>
+  </button>
+</span>
+`;
+var failedIcon = `
+<span class="DirectMessage-action hermes-icon">
+  <button type="button" class="js-tooltip" title="Failed to decrypt Hermes message; have keys changed?" data-message-id="${event.data.id}" aria-hidden="false">
+    <span class="Icon Icon--protected" style="color: inherit; width: 0;"></span>
+    <span class="Icon Icon--close Icon--medium" style="color: #e0245e; margin-left: -5px;"></span>
+  </button>
+</span>
+`;
 var listener = function(event) {
   if (event.source != window)
     return;
@@ -48,22 +63,9 @@ var listener = function(event) {
       uiDMSendMessageCallback(oldT, e);
     }
     else if (event.data.type == 'directMessage_r') {
-      var encryptedIcon = `
-      <span class="DirectMessage-actio hermes-iconn">
-        <button type="button" class="js-tooltip" title="Encrypted with Hermes" data-message-id="${event.data.id}" aria-hidden="false">
-          <span class="Icon Icon--protected" style="color: inherit;"></span>
-        </button>
-      </span>
-      `;
-      var failedIcon = `
-      <span class="DirectMessage-action hermes-icon">
-        <button type="button" class="js-tooltip" title="Failed to decrypt Hermes message; have keys changed?" data-message-id="${event.data.id}" aria-hidden="false">
-          <span class="Icon Icon--protected" style="color: #e0245e;"></span>
-        </button>
-      </span>
-      `;
-      var dmActionsEl = $(`.DirectMessage[data-message-id=${event.data.id}]`).find('.DirectMessage-actions');
       $(`.DirectMessage[data-message-id=${event.data.id}]`).find('p.js-tweet-text').html(event.data.text);
+
+      var dmActionsEl = $(`.DirectMessage[data-message-id=${event.data.id}]`).find('.DirectMessage-actions');
       dmActionsEl.find('.hermes-icon').remove();
       if (event.data.own) {
         dmActionsEl.append(event.data.success ? encryptedIcon : failedIcon);
@@ -119,6 +121,7 @@ var jqueryWaitInterval = setInterval(() => {
       //console.trace(e.recipient);
       window.postMessage({ type: 'uiDMDialogOpenedConversation', e: e }, '*');
       uiDMSendMessageEventIntercept();
+      setTimeout(attemptDecryptMessages, 100);
     });
     $(document).on('dataDMUserUpdates', attemptDecryptMessages);
     $(document).on('uiDMDialogOpenedConversationList', (t, e) => {
