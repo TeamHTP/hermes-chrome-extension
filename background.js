@@ -16,8 +16,8 @@ let tabIcons = {};
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === 'changeIcon') {
-    tabIcons[currentTabId] = msg.value;
-    updateIcon(msg.value);
+    tabIcons[sender.tab.id] = msg.value;
+    updateIcon(tabIcons[currentTabId]);
   }
   else if (msg.action === 'regenKeyPair') {
     generateAndStoreKeyPair();
