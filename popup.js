@@ -4,9 +4,10 @@ function sendGenerateRequest() {
   if (!disabled) {
     chrome.runtime.sendMessage({ action: 'regenKeyPair' });
     disabled = true;
-    document.getElementById('generateKeyButton').innerHTML = 'New keypair generated!';
+    var oldButtonText = document.getElementById('generateKeyButton').innerHTML;
+    document.getElementById('generateKeyButton').innerHTML = 'New keys generated!';
     setTimeout(() => {
-      document.getElementById('generateKeyButton').innerHTML = 'Generate new keypair';
+      document.getElementById('generateKeyButton').innerHTML = oldButtonText;
       disabled = false;
     }, 2500);
   }
