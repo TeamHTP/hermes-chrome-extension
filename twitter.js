@@ -57,7 +57,7 @@ function lookupTwitterId(id) {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', `https://hermes.teamhtp.com/api/v1/twitter/public_key/get?twitter_user_id=${id}`, true);
   xhr.send();
-  xhr.onreadystatechange = function () {
+  xhr.onreadystatechange = () => {
     if(xhr.readyState === 4) {
       if (xhr.status === 404) {
         theirPublicKey = '';
@@ -174,7 +174,7 @@ eventHandlers._userId = (event) => {
   //console.log(myTwitterId);
 };
 
-window.addEventListener('message', function(event) {
+window.addEventListener('message', (event) => {
   if (event.source != window)
     return;
 
@@ -189,7 +189,7 @@ window.addEventListener('message', function(event) {
   }
 }, false);
 
-let s = document.createElement('script');
+var s = document.createElement('script');
 s.src = chrome.extension.getURL('twitterInject.js');
 (document.head || document.documentElement).appendChild(s);
 s.onload = () => {

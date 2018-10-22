@@ -37,7 +37,7 @@ function getDMTextbox() {
 
 var uiDMSendMessageCallback;
 var oldT;
-var listener = function(event) {
+var listener = (event) => {
   if (event.source != window)
     return;
 

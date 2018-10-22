@@ -9,7 +9,7 @@ function sendGenerateRequest() {
     setTimeout(() => {
       document.getElementById('generateKeyButton').innerHTML = oldButtonText;
       disabled = false;
-    }, 2500);
+    }, 2200);
   }
 }
 
