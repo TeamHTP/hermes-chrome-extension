@@ -119,7 +119,6 @@ eventHandlers.directMessage = (event) => {
       }
     }
     catch (err) {
-      //TODO: Fail icon
       if (!isOwnMessage) {
         lookupAttempts[event.data.id] = lookupAttempts[event.data.id] || 0;
         if (lookupAttempts[event.data.id] < 2) {
@@ -127,6 +126,7 @@ eventHandlers.directMessage = (event) => {
           lookupTwitterId(event.data.sender_id);
         }
       }
+      window.postMessage({ type: 'directMessage_r', id: event.data.id, text: event.data.text, own: isOwnMessage, success: false }, '*');
     }
   }
   else {
@@ -150,9 +150,14 @@ window.addEventListener('message', function(event) {
   if (event.source != window)
     return;
 
-  if (event.data.type) {
+  if (event.data.type && event.data.type.indexOf('_r') != event.data.type.length - 2) {
     //let port = chrome.runtime.connect();
-    eventHandlers[event.data.type](event);
+    if (eventHandlers.hasOwnProperty(event.data.type)) {
+      eventHandlers[event.data.type](event);
+    }
+    else {
+      console.log(`Received unhandled event: ${event.data.type}`);
+    }
   }
 }, false);
 

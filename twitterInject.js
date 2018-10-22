@@ -49,20 +49,27 @@ var listener = function(event) {
     }
     else if (event.data.type == 'directMessage_r') {
       var encryptedIcon = `
-      <span class="DirectMessage-action">
+      <span class="DirectMessage-actio hermes-iconn">
         <button type="button" class="js-tooltip" title="Encrypted with Hermes" data-message-id="${event.data.id}" aria-hidden="false">
           <span class="Icon Icon--protected" style="color: inherit;"></span>
         </button>
       </span>
-      `
-      $('.DirectMessage[data-message-id=' + event.data.id + ']').find('p.js-tweet-text').html(event.data.text);
-      var newHtml = $('.DirectMessage[data-message-id=' + event.data.id + ']').find('.DirectMessage-actions').html().replace(encryptedIcon, '');
-      $('.DirectMessage[data-message-id=' + event.data.id + ']').find('.DirectMessage-actions').html(newHtml);
+      `;
+      var failedIcon = `
+      <span class="DirectMessage-action hermes-icon">
+        <button type="button" class="js-tooltip" title="Failed to decrypt Hermes message; have keys changed?" data-message-id="${event.data.id}" aria-hidden="false">
+          <span class="Icon Icon--protected" style="color: #e0245e;"></span>
+        </button>
+      </span>
+      `;
+      var dmActionsEl = $(`.DirectMessage[data-message-id=${event.data.id}]`).find('.DirectMessage-actions');
+      $(`.DirectMessage[data-message-id=${event.data.id}]`).find('p.js-tweet-text').html(event.data.text);
+      dmActionsEl.find('.hermes-icon').remove();
       if (event.data.own) {
-        $('.DirectMessage[data-message-id=' + event.data.id + ']').find('.DirectMessage-actions').append(encryptedIcon);
+        dmActionsEl.append(event.data.success ? encryptedIcon : failedIcon);
       }
       else {
-        $('.DirectMessage[data-message-id=' + event.data.id + ']').find('.DirectMessage-actions').prepend(encryptedIcon);
+        dmActionsEl.prepend(event.data.success ? encryptedIcon : failedIcon);
       }
     }
   }
