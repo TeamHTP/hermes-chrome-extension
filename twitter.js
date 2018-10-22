@@ -1,6 +1,6 @@
 var keyPair = {
-  publicKey: "",
-  secretKey: ""
+  publicKey: '',
+  secretKey: ''
 };
 var myTwitterId = '';
 var theirPublicKey = '';
@@ -111,6 +111,7 @@ eventHandlers.uiDMDialogOpenedConversation = (event) => {
     id: -1,
     text: ''
   };
+  downgraded = false;
   chrome.runtime.sendMessage({
     action: 'changeIcon',
     value: 'unlocked'
@@ -153,7 +154,7 @@ eventHandlers.directMessage = (event) => {
           lookupTwitterId(event.data.sender_id);
         }
       }
-      window.postMessage({ type: 'directMessage_r', id: event.data.id, text: event.data.text, own: isOwnMessage, success: false }, '*');
+      window.postMessage({ type: 'directMessage_r', id: event.data.id, text: '', own: isOwnMessage, success: false }, '*');
     }
     downgraded = false;
   }
