@@ -4,7 +4,7 @@ function sendGenerateRequest() {
   if (!disabled) {
     chrome.runtime.sendMessage({ action: 'regenKeyPair' });
     disabled = true;
-    document.getElementById('generateKeyButton').innerHTML = 'Refresh your page to use new keypair!';
+    document.getElementById('generateKeyButton').innerHTML = 'New keypair generated!';
     setTimeout(() => {
       document.getElementById('generateKeyButton').innerHTML = 'Generate new keypair';
       disabled = false;

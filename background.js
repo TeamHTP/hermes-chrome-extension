@@ -4,11 +4,14 @@ chrome.runtime.onInstalled.addListener(() => {
 
 function generateAndStoreKeyPair() {
   const keyPair = HermesCrypto.generateKeyPair();
+  keyPair.publicKey = HermesCrypto.encodeBase64(keyPair.publicKey);
+  keyPair.secretKey = HermesCrypto.encodeBase64(keyPair.secretKey)
   chrome.storage.local.set({
-    publicKey: HermesCrypto.encodeBase64(keyPair.publicKey),
-    secretKey: HermesCrypto.encodeBase64(keyPair.secretKey)
+    publicKey: keyPair.publicKey,
+    secretKey: keyPair.secretKey
   });
   console.log('Generating and storing new key pair');
+  return keyPair;
 }
 
 let currentTabId;
@@ -20,7 +23,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     updateIcon(tabIcons[currentTabId]);
   }
   else if (msg.action === 'regenKeyPair') {
-    generateAndStoreKeyPair();
+    var keyPair = generateAndStoreKeyPair();
+    chrome.tabs.query({}, (tabs) => {
+      for (var i = 0; i < tabs.length; ++i) {
+        chrome.tabs.sendMessage(tabs[i].id, {
+          action: 'keyPair',
+          publicKey: keyPair.publicKey,
+          secretKey: keyPair.secretKey
+        });
+      }
+    });
   }
 });
 

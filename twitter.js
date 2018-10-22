@@ -13,6 +13,14 @@ chrome.storage.local.get(['publicKey', 'secretKey'], (result) => {
   keyPair.secretKey = result.secretKey;
 });
 
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg.action === 'keyPair') {
+    keyPair.publicKey = msg.publicKey;
+    keyPair.secretKey = msg.secretKey;
+    console.log('Using newly generated keypair from extension.');
+  }
+});
+
 function getTheirPublicKey() {
   return theirPublicKey;
 }
