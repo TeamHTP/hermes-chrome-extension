@@ -59,12 +59,15 @@ function lookupTwitterId(id) {
         theirPublicKey = '';
       }
       else if (xhr.status === 200) {
-        theirPublicKey = JSON.parse(xhr.responseText).data.publicKey;
-        console.log('Found public key from Hermes API.');
-        chrome.runtime.sendMessage({
-          action: 'changeIcon',
-          value: 'locked'
-        });
+        var foundPublicKey = JSON.parse(xhr.responseText).data.publicKey;
+        if (theirPublicKey != foundPublicKey) {
+          theirPublicKey = foundPublicKey;
+          console.log('Found public key from Hermes API.');
+          chrome.runtime.sendMessage({
+            action: 'changeIcon',
+            value: 'locked'
+          });
+        }
       }
     }
   };
@@ -136,6 +139,7 @@ eventHandlers.directMessage = (event) => {
       }
       window.postMessage({ type: 'directMessage_r', id: event.data.id, text: event.data.text, own: isOwnMessage, success: false }, '*');
     }
+    downgraded = false;
   }
   else {
     downgraded = true;

@@ -49,7 +49,7 @@ var listener = function(event) {
     }
     else if (event.data.type == 'directMessage_r') {
       $(`.DirectMessage[data-message-id=${event.data.id}]`).find('p.js-tweet-text').html(event.data.text);
-      
+
       var encryptedIcon = `
       <span class="DirectMessage-actio hermes-iconn">
         <button type="button" class="js-tooltip" title="Encrypted with Hermes" data-message-id="${event.data.id}" aria-hidden="false">
@@ -60,8 +60,7 @@ var listener = function(event) {
       var failedIcon = `
       <span class="DirectMessage-action hermes-icon">
         <button type="button" class="js-tooltip" title="Failed to decrypt Hermes message; have keys changed?" data-message-id="${event.data.id}" aria-hidden="false">
-          <span class="Icon Icon--protected" style="color: inherit; width: 0;"></span>
-          <span class="Icon Icon--close Icon--medium" style="color: #e0245e; margin-left: -5px;"></span>
+          <span class="Icon Icon--info" style="color: #e0245e; transform: rotate(180deg) translateY(-2px);"></span>
         </button>
       </span>
       `;
