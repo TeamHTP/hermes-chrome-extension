@@ -7,6 +7,10 @@ var theirPublicKey = '';
 var lookupAttempts = {};
 var downgraded = false;
 var eventHandlers = {};
+var latestReceivedMessage = {
+  id: -1,
+  text: ''
+};
 
 chrome.storage.local.get(['publicKey', 'secretKey'], (result) => {
   keyPair.publicKey = result.publicKey;
@@ -102,6 +106,11 @@ eventHandlers.uiDMDialogOpenedConversation = (event) => {
 
   console.log(`New conversation: ${event.data.e.recipient}`);
   //console.log(event);
+  theirPublicKey = '';
+  latestReceivedMessage = {
+    id: -1,
+    text: ''
+  };
   chrome.runtime.sendMessage({
     action: 'changeIcon',
     value: 'unlocked'
@@ -118,6 +127,13 @@ eventHandlers.notInDMConversation = (event) => {
 eventHandlers.directMessage = (event) => {
   var isOwnMessage = event.data.sender_id == myTwitterId;
   var isHermesMessage = event.data.text.match(/HERMES_A:.*\nHERMES_B:.*/g);
+  var isLatestReceivedMessage = false;
+  if (!isOwnMessage) {
+    isLatestReceivedMessage = event.data.id > latestReceivedMessage.id;
+    if (isLatestReceivedMessage) {
+      latestReceivedMessage.text = event.data.text;
+    }
+  }
   if (isHermesMessage) {
     var hermesA = event.data.text.split('\n')[0].substring(9);
     var hermesB = event.data.text.split('\n')[1].substring(9);
@@ -141,7 +157,7 @@ eventHandlers.directMessage = (event) => {
     }
     downgraded = false;
   }
-  else {
+  else if (!isOwnMessage && isLatestReceivedMessage) {
     downgraded = true;
     chrome.runtime.sendMessage({
       action: 'changeIcon',
