@@ -35,7 +35,7 @@
       "run_at": "document_start"
     }
   ],
-  "web_accessible_resources": ["injectTwitter.js"],
+  "web_accessible_resources": ["twitterInject.js"],
   "icons": {
     "16": "assets/locked.png",
     "32": "assets/locked2x.png",

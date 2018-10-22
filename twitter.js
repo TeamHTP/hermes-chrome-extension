@@ -9,6 +9,7 @@ chrome.storage.local.get(['publicKey', 'secretKey'], (result) => {
 var myTwitterId = '';
 var theirPublicKey = '';
 var lookupAttempts = {};
+var downgraded = false;
 
 function getTheirPublicKey() {
   return theirPublicKey;
@@ -73,13 +74,12 @@ window.addEventListener('message', function(event) {
     //let port = chrome.runtime.connect();
     if (event.data.type == 'uiDMSendMessage') {
       //console.log(`Request to encrypt: ${event.data.e.text}`);
-      if (getTheirPublicKey().length != 0) {
+      if (getTheirPublicKey().length != 0 && !downgraded) {
         var message = event.data.e.text;
         event.data.e.text = `HERMES_A:${encryptMessage(message)}\nHERMES_B:${encryptMessageForSelf(message)}`;
         window.postMessage({ type: 'uiDMSendMessage_r', e: event.data.e }, '*');
       }
       else {
-        console.log('No public key for recipient!!!');
         window.postMessage({ type: 'uiDMSendMessage_r', e: event.data.e }, '*');
       }
     }
@@ -130,6 +130,13 @@ window.addEventListener('message', function(event) {
           }
         }
       }
+      else {
+        downgraded = true;
+        chrome.runtime.sendMessage({
+          action: 'changeIcon',
+          value: 'unlocked'
+        });
+      }
       //console.log(event.data);
     }
     else if (event.data.type == '_userId') {
@@ -142,7 +149,7 @@ window.addEventListener('message', function(event) {
 }, false);
 
 let s = document.createElement('script');
-s.src = chrome.extension.getURL('injectTwitter.js');
+s.src = chrome.extension.getURL('twitterInject.js');
 (document.head||document.documentElement).appendChild(s);
 s.onload = function() {
     s.parentNode.removeChild(s);
