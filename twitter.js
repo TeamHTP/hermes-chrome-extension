@@ -66,7 +66,7 @@ function lookupTwitterId(id) {
         var foundPublicKey = JSON.parse(xhr.responseText).data.publicKey;
         if (theirPublicKey != foundPublicKey) {
           theirPublicKey = foundPublicKey;
-          console.log('Found public key from Hermes API.');
+          console.log('Found their public key from Hermes API.');
           chrome.runtime.sendMessage({
             action: 'changeIcon',
             value: 'locked'
@@ -84,11 +84,16 @@ function pairTwitterUserIdWithPublicKey(id, publicKey) {
 }
 
 eventHandlers.uiDMSendMessage = (event) => {
-  //console.log(`Request to encrypt: ${event.data.e.text}`);
+  //console.log(JSON.stringify(event.data.e));
   if (getTheirPublicKey().length != 0 && !downgraded) {
-    var message = event.data.e.text;
-    event.data.e.text = `HERMES_A:${encryptMessage(message)}\nHERMES_B:${encryptMessageForSelf(message)}`;
-    window.postMessage({ type: 'uiDMSendMessage_r', e: event.data.e }, '*');
+    if (event.data.e.media_data) {
+      //TODO: dialog to confirm unencrypted media send
+    }
+    else {
+      var message = event.data.e.text;
+      event.data.e.text = `HERMES_A:${encryptMessage(message)}\nHERMES_B:${encryptMessageForSelf(message)}`;
+      window.postMessage({ type: 'uiDMSendMessage_r', e: event.data.e }, '*');
+    }
   }
   else {
     window.postMessage({ type: 'uiDMSendMessage_r', e: event.data.e }, '*');
@@ -171,7 +176,7 @@ eventHandlers.directMessage = (event) => {
 eventHandlers._userId = (event) => {
   myTwitterId = event.data.data;
   pairTwitterUserIdWithPublicKey(myTwitterId, getMyPublicKey());
-  console.log('Pairing public key with Hermes API.');
+  console.log('Pairing your public key with Hermes API.');
   //console.log(myTwitterId);
 };
 
