@@ -86,12 +86,15 @@ function pairTwitterUserIdWithPublicKey(id, publicKey) {
 eventHandlers.uiDMSendMessage = (event) => {
   //console.log(JSON.stringify(event.data.e));
   if (getTheirPublicKey().length != 0 && !downgraded) {
+    var sendMediaConfirmResult;
     if (event.data.e.media_data) {
-      //TODO: dialog to confirm unencrypted media send
+      sendMediaConfirmResult = confirm('Hermes does not support encryption of non-text media on Twitter. Do you want to send your message anyway? Your media will NOT be encrypted, but your comment will still be encrypted.');
     }
-    else {
+    if (!event.data.e.media_data || (event.data.e.media_data && sendMediaConfirmResult)) {
       var message = event.data.e.text;
-      event.data.e.text = `HERMES_A:${encryptMessage(message)}\nHERMES_B:${encryptMessageForSelf(message)}`;
+      if (event.data.e.text.length > 0) {
+        event.data.e.text = `HERMES_A:${encryptMessage(message)}\nHERMES_B:${encryptMessageForSelf(message)}`;
+      }
       window.postMessage({ type: 'uiDMSendMessage_r', e: event.data.e }, '*');
     }
   }

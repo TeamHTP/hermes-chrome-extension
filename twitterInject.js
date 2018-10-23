@@ -49,7 +49,9 @@ var listener = (event) => {
     }
     else if (event.data.type == 'directMessage_r') {
       if (event.data.success) {
-        $(`.DirectMessage[data-message-id=${event.data.id}]`).find('p.js-tweet-text').html(event.data.text);
+        var tweetTextEl = $(`.DirectMessage[data-message-id=${event.data.id}]`).find('p.js-tweet-text');
+        tweetTextEl.html(event.data.text);
+        tweetTextEl.addClass('hermes-decrypted');
       }
 
       var encryptedIcon = `
@@ -108,7 +110,9 @@ var attemptDecryptMessages = (t, e) => {
       var id = $(messages[i]).attr('data-message-id');
       var sender_id = $(messages[i]).attr('data-sender-id');
       var text = $(messages[i]).find('p.js-tweet-text').html();
-      window.postMessage({ type: 'directMessage', id: id, sender_id: sender_id, text: text }, '*');
+      if (!$(messages[i]).find('p.js-tweet-text').hasClass('hermes-decrypted') && typeof text != 'undefined') {
+        window.postMessage({ type: 'directMessage', id: id, sender_id: sender_id, text: text }, '*');
+      }
     }
   }, 100);
 };
