@@ -1,6 +1,6 @@
 # hermes-chrome-extension
 
-<img src="https://github.com/TeamHTP/hermes-chrome-extension/raw/master/assets/Hermes_thumbnail.png" width="200" height="200">
+<img src="https://github.com/TeamHTP/hermes-chrome-extension/raw/master/assets/Hermes_thumbnail.png" width="300" height="300">
 Drop-in encryption for your favorite social network.
 
 ## Development
@@ -15,4 +15,4 @@ Drop-in encryption for your favorite social network.
 
 4. ```> gulp clean-build-chromium```
 
-5. Load the extension from ```dist/``` into Chrome through <a href="chrome://extensions">chrome://extensions</a>
+5. Load the extension from ```dist/chromium``` into Chrome through <a href="chrome://extensions">chrome://extensions</a>

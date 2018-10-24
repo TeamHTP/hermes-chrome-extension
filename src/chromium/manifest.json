@@ -1,6 +1,6 @@
 {
   "name": "Hermes",
-  "version": "0.2.0",
+  "version": "0.0.0",
   "description": "Drop-in encryption for your favorite social network.",
   "permissions": [
     "storage",
