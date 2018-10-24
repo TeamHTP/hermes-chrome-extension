@@ -1,6 +1,21 @@
-chrome.runtime.onInstalled.addListener(() => {
-  generateAndStoreKeyPair();
-});
+let currentTabId;
+let tabIcons = {};
+
+function checkAndGenerateLocalStorageKeys() {
+  chrome.storage.local.get(['publicKey', 'secretKey'], (result) => {
+    if (typeof result.secretKey === 'undefined') {
+      generateAndStoreKeyPair();
+    }
+    else {
+      if (typeof result.publicKey === 'undefined') {
+        var publicKey = HermesCrypto.encodeBase64(HermesCrypto.generateKeyPairFromSecretKey(result.secretKey).publicKey);
+        chrome.storage.local.set({
+          publicKey: publicKey
+        });
+      }
+    }
+  });
+}
 
 function generateAndStoreKeyPair() {
   const keyPair = HermesCrypto.generateKeyPair();
@@ -13,28 +28,6 @@ function generateAndStoreKeyPair() {
   console.log('Generating and storing new key pair');
   return keyPair;
 }
-
-let currentTabId;
-let tabIcons = {};
-
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.action === 'changeIcon') {
-    tabIcons[sender.tab.id] = msg.value;
-    updateIcon(tabIcons[currentTabId]);
-  }
-  else if (msg.action === 'regenKeyPair') {
-    var keyPair = generateAndStoreKeyPair();
-    chrome.tabs.query({}, (tabs) => {
-      for (var i = 0; i < tabs.length; ++i) {
-        chrome.tabs.sendMessage(tabs[i].id, {
-          action: 'keyPair',
-          publicKey: keyPair.publicKey,
-          secretKey: keyPair.secretKey
-        });
-      }
-    });
-  }
-});
 
 function updateIcon(type) {
   chrome.browserAction.setIcon({
@@ -57,6 +50,49 @@ function updateIcon(type) {
       break;
   }
 }
+
+actionHandlers = {};
+
+actionHandlers.changeIcon = (msg, sender, sendResponse) => {
+  tabIcons[sender.tab.id] = msg.value;
+  updateIcon(tabIcons[currentTabId]);
+}
+
+actionHandlers.regenKeyPair = (msg, sender, sendResponse) => {
+  var keyPair = generateAndStoreKeyPair();
+  chrome.tabs.query({}, (tabs) => {
+    for (var i = 0; i < tabs.length; ++i) {
+      chrome.tabs.sendMessage(tabs[i].id, {
+        action: 'keyPair',
+        publicKey: keyPair.publicKey,
+        secretKey: keyPair.secretKey
+      });
+    }
+  });
+}
+
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (actionHandlers.hasOwnProperty(msg.action)) {
+    actionHandlers[msg.action](msg, sender, sendResponse);
+  }
+  else {
+    console.log(`Received message with no handler: ${msg}`);
+  }
+});
+
+chrome.runtime.onInstalled.addListener(() => {
+  queryOptions((options) => {
+    if (!options.rememberMasterPassword._disabled) {
+      /*
+      var masterPasswordHash = options.masterPassword.value;
+      var decryptedSecretKey = '';
+      chrome.storage.local.set({
+        secretKey: decryptedSecretKey
+      });*/
+    }
+    checkAndGenerateLocalStorageKeys();
+  });
+});
 
 chrome.tabs.onActivated.addListener((activeInfo) => {
   currentTabId = activeInfo.tabId;

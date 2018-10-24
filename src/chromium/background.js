@@ -1,8 +1,24 @@
-chrome.runtime.onInstalled.addListener(() => {
-  generateAndStoreKeyPair();
-});
+let currentTabId;
+let tabIcons = {};
+let storageLocation = chrome.storage.lcoal;
 
-function generateAndStoreKeyPair() {
+function checkAndGenerateKeysLocalStorage() {
+  chrome.storage.local.get(['publicKey', 'secretKey'], (result) => {
+    if (typeof result.secretKey === 'undefined') {
+      generateAndStoreKeyPairLocalStorage();
+    }
+    else {
+      if (typeof result.publicKey === 'undefined') {
+        var publicKey = HermesCrypto.encodeBase64(HermesCrypto.generateKeyPairFromSecretKey(result.secretKey).publicKey);
+        chrome.storage.local.set({
+          publicKey: publicKey
+        });
+      }
+    }
+  });
+}
+
+function generateAndStoreKeyPairLocalStorage() {
   const keyPair = HermesCrypto.generateKeyPair();
   keyPair.publicKey = HermesCrypto.encodeBase64(keyPair.publicKey);
   keyPair.secretKey = HermesCrypto.encodeBase64(keyPair.secretKey)
@@ -13,28 +29,6 @@ function generateAndStoreKeyPair() {
   console.log('Generating and storing new key pair');
   return keyPair;
 }
-
-let currentTabId;
-let tabIcons = {};
-
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.action === 'changeIcon') {
-    tabIcons[sender.tab.id] = msg.value;
-    updateIcon(tabIcons[currentTabId]);
-  }
-  else if (msg.action === 'regenKeyPair') {
-    var keyPair = generateAndStoreKeyPair();
-    chrome.tabs.query({}, (tabs) => {
-      for (var i = 0; i < tabs.length; ++i) {
-        chrome.tabs.sendMessage(tabs[i].id, {
-          action: 'keyPair',
-          publicKey: keyPair.publicKey,
-          secretKey: keyPair.secretKey
-        });
-      }
-    });
-  }
-});
 
 function updateIcon(type) {
   chrome.browserAction.setIcon({
@@ -57,6 +51,65 @@ function updateIcon(type) {
       break;
   }
 }
+
+actionHandlers = {};
+
+actionHandlers.changeIcon = (msg, sender, sendResponse) => {
+  tabIcons[sender.tab.id] = msg.value;
+  updateIcon(tabIcons[currentTabId]);
+}
+
+actionHandlers.regenKeyPair = (msg, sender, sendResponse) => {
+  var keyPair = generateAndStoreKeyPairLocalStorage();
+  chrome.tabs.query({}, (tabs) => {
+    for (var i = 0; i < tabs.length; ++i) {
+      chrome.tabs.sendMessage(tabs[i].id, {
+        action: 'keyPair',
+        publicKey: keyPair.publicKey,
+        secretKey: keyPair.secretKey
+      });
+    }
+  });
+}
+
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (actionHandlers.hasOwnProperty(msg.action)) {
+    actionHandlers[msg.action](msg, sender, sendResponse);
+  }
+  else {
+    console.log(`Received message with no handler: ${msg}`);
+  }
+});
+
+chrome.runtime.onInstalled.addListener(() => {
+  queryOptions((options) => {
+    if (options.keyStorageLocation.value == 0) {
+      storageLocation = chrome.storage.local;
+    }
+    else if (options.keyStorageLocation.value == 0) {
+      storageLocation = chrome.storage.sync;
+    }
+
+    if (!options.rememberMasterPassword._disabled) {
+      var masterPasswordHash = options.masterPassword.value;
+
+      storageLocation.get(['encryptedSecretKey'], (result) => {
+        if (typeof result.encryptedSecretKey != 'undefined') {
+          var decryptedSecretKey = HermesCrypto.decrytSecret(result.encryptedSecretKey, masterPasswordHash);
+          
+          chrome.storage.local.set({
+            secretKey: decryptedSecretKey
+          }, () => {
+            checkAndGenerateKeysLocalStorage();
+          });
+        }
+      });
+    }
+    else {
+      checkAndGenerateKeysLocalStorage();
+    }
+  });
+});
 
 chrome.tabs.onActivated.addListener((activeInfo) => {
   currentTabId = activeInfo.tabId;

@@ -37,5 +37,20 @@ function encryptDecrypt() {
   assert(messageUTF8 === decryptedUTF8);
 }
 
+function encryptDecryptSecret() {
+  const password = 'this_is_a_secret';
+  const passwordHashB64 = crypto.hash32(password);
+  const messageUTF8 = encodeBase64(crypto.generateKeyPair().secretKey);
+
+  const encryptedBase64 = crypto.encryptSecret(messageUTF8, passwordHashB64);
+  const decryptedUTF8 = crypto.decryptSecret(encryptedBase64, passwordHashB64);
+
+  console.log(`Message to encrypt: ${messageUTF8}`);
+  console.log(`Encrypted b64: ${encryptedBase64}`);
+  console.log(`Decrypted message: ${decryptedUTF8}`);
+  assert(messageUTF8 === decryptedUTF8);
+}
+
 tests.push(encryptDecrypt);
+tests.push(encryptDecryptSecret);
 runTests();
