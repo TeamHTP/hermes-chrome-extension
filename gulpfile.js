@@ -34,6 +34,7 @@ gulp.task('chromium-webpack', () => {
   return gulp.src('src/common/crypto.js')
     .pipe(gulpWebpack({
       mode: 'production',
+      target: 'web',
       output: {
         library: 'HermesCrypto',
         filename: 'crypto.js'
