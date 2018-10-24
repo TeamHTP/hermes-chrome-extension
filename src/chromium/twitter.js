@@ -12,11 +12,6 @@ var latestReceivedMessage = {
   text: ''
 };
 
-/*chrome.storage.local.get(['publicKey', 'secretKey'], (result) => {
-  keyPair.publicKey = result.publicKey;
-  keyPair.secretKey = result.secretKey;
-});*/
-
 chrome.runtime.sendMessage({ action: 'getKeyPair' });
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {

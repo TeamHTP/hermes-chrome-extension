@@ -77,9 +77,14 @@ function decryptEncryptedSecret(masterPasswordHash, callback) {
 function promptForMasterPasswordAndDecrypt() {
   //TODO: better way to ask user for master password
   var masterPasswordRaw = prompt('Enter your master password');
-  workingMasterPassword = HermesCrypto.hash32(masterPasswordRaw);
+  if (masterPasswordRaw !== null) {
+    workingMasterPassword = HermesCrypto.hash32(masterPasswordRaw);
 
-  decryptEncryptedSecret(workingMasterPassword, () => { checkAndGeneratePublicKeyWorkingKeyPair(); });
+    decryptEncryptedSecret(workingMasterPassword, () => { checkAndGeneratePublicKeyWorkingKeyPair(); });
+  }
+  else {
+    promptForMasterPasswordAndDecrypt();
+  }
 }
 
 let actionHandlers = {};
