@@ -19,7 +19,7 @@
   },
   "background": {
     "scripts": [
-      "webpackDist/cryptoBundle.js",
+      "crypto.js",
       "background.js"
     ],
     "persistent": false
@@ -28,7 +28,7 @@
     {
       "matches": ["*://twitter.com/*"],
       "js": [
-        "webpackDist/cryptoBundle.js",
+        "crypto.js",
         "twitter.js"
       ],
       "run_at": "document_start"

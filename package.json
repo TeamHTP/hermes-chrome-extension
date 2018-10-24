@@ -4,8 +4,7 @@
   "description": "Drop-in encryption for your favorite social network.",
   "main": "",
   "scripts": {
-    "test": "node test.js",
-    "webpack": "webpack"
+    "test": "node tools/test.js"
   },
   "author": "TeamHTP",
   "license": "GPL-3.0",
@@ -14,7 +13,10 @@
     "tweetnacl-util": "^0.15.0"
   },
   "devDependencies": {
+    "del": "^3.0.0",
+    "gulp": "^4.0.0",
     "webpack": "^4.21.0",
+    "webpack-stream": "^5.1.1",
     "webpack-cli": "^3.1.2"
   }
 }

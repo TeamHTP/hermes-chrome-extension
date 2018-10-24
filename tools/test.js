@@ -1,5 +1,5 @@
 const assert = require('assert');
-const crypto = require('./webpackSrc/crypto.js');
+const crypto = require('../src/common/crypto.js');
 const {
   decodeUTF8,
   encodeUTF8,

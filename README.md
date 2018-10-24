@@ -3,12 +3,16 @@
 <img src="https://github.com/TeamHTP/hermes-chrome-extension/raw/master/assets/Hermes_thumbnail.png" width="200" height="200">
 Drop-in encryption for your favorite social network.
 
-### Development
+## Development
+
+### Chrome extension
 
 1. Clone the repo
 
-2. ```$ npm install```
+2. ```> npm install```
 
-3. ```$ npm run webpack```
+3. ```> npm install gulp-cli --global```
 
-4. Load the extension into Chrome through <a href="chrome://extensions">chrome://extensions</a>
+4. ```> gulp clean-build-chromium```
+
+5. Load the extension from ```dist/``` into Chrome through <a href="chrome://extensions">chrome://extensions</a>
