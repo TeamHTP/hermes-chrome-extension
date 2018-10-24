@@ -52,7 +52,19 @@ function updateIcon(type) {
   }
 }
 
-actionHandlers = {};
+function decryptEncryptedSecret(masterPasswordHash, callback) {
+  storageLocation.get(['encryptedSecretKey'], (result) => {
+    if (typeof result.encryptedSecretKey != 'undefined') {
+      var decryptedSecretKey = HermesCrypto.decrytSecret(result.encryptedSecretKey, masterPasswordHash);
+
+      chrome.storage.local.set({
+        secretKey: decryptedSecretKey
+      }, callback);
+    }
+  });
+}
+
+let actionHandlers = {};
 
 actionHandlers.changeIcon = (msg, sender, sendResponse) => {
   tabIcons[sender.tab.id] = msg.value;
@@ -81,7 +93,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 });
 
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onStartup.addListener(() => {
   queryOptions((options) => {
     if (options.keyStorageLocation.value == 0) {
       storageLocation = chrome.storage.local;
@@ -93,17 +105,14 @@ chrome.runtime.onInstalled.addListener(() => {
     if (!options.rememberMasterPassword._disabled) {
       var masterPasswordHash = options.masterPassword.value;
 
-      storageLocation.get(['encryptedSecretKey'], (result) => {
-        if (typeof result.encryptedSecretKey != 'undefined') {
-          var decryptedSecretKey = HermesCrypto.decrytSecret(result.encryptedSecretKey, masterPasswordHash);
-          
-          chrome.storage.local.set({
-            secretKey: decryptedSecretKey
-          }, () => {
-            checkAndGenerateKeysLocalStorage();
-          });
-        }
-      });
+      decryptEncryptedSecret(masterPasswordHash, () => { checkAndGenerateKeysLocalStorage(); });
+    }
+    else if (options.rememberMasterPassword._disabled) {
+      //TODO: ask user for master password
+      var masterPasswordRaw = '';
+      var masterPasswordHash = HermesCrypto.hash32(masterPasswordRaw);
+
+      decryptEncryptedSecret(masterPasswordHash, () => { checkAndGenerateKeysLocalStorage(); });
     }
     else {
       checkAndGenerateKeysLocalStorage();

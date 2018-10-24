@@ -20,10 +20,22 @@ function queryOptions(callback) {
       value: '',
       onUpdate: (options) => {
         if (options.masterPassword.value === 'unknown' && !options.encryptKey.value) {
+          // Value is 'unknown' (not stored) and encryptKey is disabled
+          // Set password back to default
           options.masterPassword.value = options.masterPassword.default;
         }
         else if (options.masterPassword.value === options.masterPassword.default && options.encryptKey.value) {
+          // Value is default (not set) and encryption key is enabled
+          // Set password to 'unknown'
           options.masterPassword.value = 'unknown';
+        }
+      },
+      onSave: (options) => {
+        if (!options.rememberMasterPassword) {
+          return 'unknown';
+        }
+        else {
+          return options.masterPassword.value;
         }
       }
     },
@@ -77,9 +89,20 @@ function runOptionsLogic() {
   }
 }
 
+function runSaveLogic() {
+  for (var optionKey in defaultOptions) {
+    var option = options[optionKey];
+    if (option.hasOwnProperty('onSave') && typeof option.onUpdate === 'function') {
+      option.onSave(options);
+    }
+  }
+}
+
 function updateOption(key, value) {
   options[key].value = value;
   runOptionsLogic();
+  runSaveLogic();
+  chrome.storage.local.set({ options: options });
   return options;
 }
 

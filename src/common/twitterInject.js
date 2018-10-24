@@ -55,7 +55,7 @@ var listener = (event) => {
       }
 
       var encryptedIcon = `
-      <span class="DirectMessage-actio hermes-iconn">
+      <span class="DirectMessage-action hermes-icon">
         <button type="button" class="js-tooltip" title="Encrypted with Hermes" data-message-id="${event.data.id}" aria-hidden="false">
           <span class="Icon Icon--protected" style="color: inherit;"></span>
         </button>
