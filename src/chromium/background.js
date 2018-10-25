@@ -41,6 +41,7 @@ function checkAndGeneratePublicKeyWorkingKeyPair() {
 }
 
 function updateIcon(type) {
+  type = type || 'unsupported';
   chrome.browserAction.setIcon({
     path: {
       "16": `assets/${type}.png`,
@@ -152,10 +153,10 @@ chrome.runtime.onInstalled.addListener(startupAndInstalledHandler);
 
 chrome.tabs.onActivated.addListener((activeInfo) => {
   currentTabId = activeInfo.tabId;
-  updateIcon(tabIcons[currentTabId] || 'unsupported');
+  updateIcon(tabIcons[currentTabId]);
 });
 
 chrome.tabs.onUpdated.addListener((tabId) => {
   tabIcons[tabId] = 'unsupported';
-  updateIcon(tabIcons[currentTabId] || 'unsupported');
+  updateIcon(tabIcons[currentTabId]);
 });
