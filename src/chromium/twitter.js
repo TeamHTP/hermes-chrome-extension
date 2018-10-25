@@ -34,19 +34,44 @@ function getMySecretKey() {
 }
 
 function encryptMessage(message) {
-  return HermesCrypto.encryptMessage(message, getTheirPublicKey(), getMySecretKey());
+  var encryptedMessage = '';
+  try {
+    encryptedMessage = HermesCrypto.encryptMessage(message, getTheirPublicKey(), getMySecretKey());
+  }
+  catch(e) {
+
+  }
+  return encryptedMessage;
 }
 
 function encryptMessageForSelf(message) {
-  return HermesCrypto.encryptMessage(message, getMyPublicKey(), getMySecretKey());
+  var encryptedMessage = '';
+  try {
+    encryptedMessage = HermesCrypto.encryptMessage(message, getMyPublicKey(), getMySecretKey());}
+  catch(e) {
+    return false;
+  }
+  return encryptedMessage;
 }
 
 function decryptMessage(message) {
-  return HermesCrypto.decryptMessage(message, getTheirPublicKey(), getMySecretKey());
+  var decryptedMessage = '';
+  try {
+    decryptedMessage = HermesCrypto.decryptMessage(message, getTheirPublicKey(), getMySecretKey());}
+  catch(e) {
+    return false;
+  }
+  return decryptedMessage;
 }
 
 function decryptMessageForSelf(message) {
-  return HermesCrypto.decryptMessage(message, getMyPublicKey(), getMySecretKey());
+  var decryptedMessage = '';
+  try {
+    decryptedMessage = HermesCrypto.decryptMessage(message, getMyPublicKey(), getMySecretKey());}
+  catch(e) {
+    return false;
+  }
+  return decryptedMessage;
 }
 
 function lookupTwitterId(id) {
@@ -63,14 +88,22 @@ function lookupTwitterId(id) {
         if (theirPublicKey != foundPublicKey) {
           theirPublicKey = foundPublicKey;
           console.log('Found their public key from Hermes API.');
-          chrome.runtime.sendMessage({
-            action: 'changeIcon',
-            value: 'locked'
-          });
+          cryptoTest();
         }
       }
     }
   };
+}
+
+function cryptoTest() {
+  var testStr = 'Hermes123!@#';
+  var encrypted = encryptMessage(testStr);
+  if (encrypted && decryptMessage(encrypted) == testStr) {
+    upgrade();
+  }
+  else {
+    downgrade();
+  }
 }
 
 function pairTwitterUserIdWithPublicKey(id, publicKey) {
@@ -84,6 +117,22 @@ function pairTwitterUserIdWithPublicKey(id, publicKey) {
   xhr.send();
 }
 
+function downgrade() {
+  downgraded = true;
+  chrome.runtime.sendMessage({
+    action: 'changeIcon',
+    value: 'unlocked'
+  });
+}
+
+function upgrade() {
+  downgraded = false;
+  chrome.runtime.sendMessage({
+    action: 'changeIcon',
+    value: 'locked'
+  });
+}
+
 eventHandlers.uiDMSendMessage = (event) => {
   //console.log(JSON.stringify(event.data.e));
   if (getTheirPublicKey().length != 0 && !downgraded) {
@@ -94,7 +143,13 @@ eventHandlers.uiDMSendMessage = (event) => {
     if (!event.data.e.media_data || (event.data.e.media_data && sendMediaConfirmResult)) {
       var message = event.data.e.text;
       if (event.data.e.text.length > 0) {
-        event.data.e.text = `HERMES_A:${encryptMessage(message)}\nHERMES_B:${encryptMessageForSelf(message)}`;
+        var encryptedMessage = encryptMessage(message);
+        if (!encryptedMessage) {
+          downgrade();
+        }
+        else {
+          event.data.e.text = `HERMES_A:${encryptedMessage}\nHERMES_B:${encryptMessageForSelf(message)}`;
+        }
       }
       window.postMessage({ type: 'uiDMSendMessage_r', e: event.data.e }, '*');
     }
@@ -120,11 +175,7 @@ eventHandlers.uiDMDialogOpenedConversation = (event) => {
     id: -1,
     text: ''
   };
-  downgraded = false;
-  chrome.runtime.sendMessage({
-    action: 'changeIcon',
-    value: 'unlocked'
-  });
+  downgrade();
 };
 
 eventHandlers.notInDMConversation = (event) => {
@@ -139,8 +190,9 @@ eventHandlers.directMessage = (event) => {
   var isHermesMessage = event.data.text.match(/HERMES_A:.*\nHERMES_B:.*/g);
   var isLatestReceivedMessage = false;
   if (!isOwnMessage) {
-    isLatestReceivedMessage = event.data.id > latestReceivedMessage.id;
+    isLatestReceivedMessage = event.data.id >= latestReceivedMessage.id;
     if (isLatestReceivedMessage) {
+      latestReceivedMessage.id = event.data.id;
       latestReceivedMessage.text = event.data.text;
     }
   }
@@ -165,15 +217,12 @@ eventHandlers.directMessage = (event) => {
       }
       window.postMessage({ type: 'directMessage_r', id: event.data.id, text: '', own: isOwnMessage, success: false }, '*');
     }
-    downgraded = false;
+    upgrade();
   }
-  else if (!isOwnMessage && isLatestReceivedMessage) {
-    downgraded = true;
-    chrome.runtime.sendMessage({
-      action: 'changeIcon',
-      value: 'unlocked'
-    });
+  else if (!isOwnMessage && isLatestReceivedMessage && event.data.now) {
+    downgrade();
   }
+  //console.log(latestReceivedMessage);
   //console.log(event.data);
 };
 
