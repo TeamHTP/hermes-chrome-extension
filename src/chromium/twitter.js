@@ -217,7 +217,9 @@ eventHandlers.directMessage = (event) => {
       }
       window.postMessage({ type: 'directMessage_r', id: event.data.id, text: '', own: isOwnMessage, success: false }, '*');
     }
-    upgrade();
+    if (event.data.now) {
+      upgrade();
+    }
   }
   else if (!isOwnMessage && isLatestReceivedMessage && event.data.now) {
     downgrade();
