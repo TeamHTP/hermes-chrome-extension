@@ -22,7 +22,7 @@ function checkAndGenerateKeysLocalStorage() {
 function generateAndStoreKeyPairLocalStorage() {
   const keyPair = HermesCrypto.generateKeyPair();
   keyPair.publicKey = HermesCrypto.encodeBase64(keyPair.publicKey);
-  keyPair.secretKey = HermesCrypto.encodeBase64(keyPair.secretKey)
+  keyPair.secretKey = HermesCrypto.encodeBase64(keyPair.secretKey);
   workingKeyPair = keyPair;
   chrome.storage.local.set({
     publicKey: keyPair.publicKey,

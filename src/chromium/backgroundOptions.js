@@ -71,8 +71,14 @@ function resetOptions() {
 
 function queryOptions(callback) {
   chrome.storage.local.get(['options'], (result) => {
+    var optionsFoundInStorage = result.hasOwnProperty('options');
     for (var optionKey in defaultOptions) {
-      options[optionKey] = result.options[optionKey] || defaultOptions[optionKey];
+      if (optionsFoundInStorage) {
+        options[optionKey] = result.options[optionKey] || defaultOptions[optionKey];
+      }
+      else {
+        options[optionKey] = defaultOptions[optionKey];
+      }
     }
     if (options.keyStorageLocation.value == 0) {
       storageLocation = chrome.storage.local;
