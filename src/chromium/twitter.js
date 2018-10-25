@@ -74,6 +74,11 @@ function lookupTwitterId(id) {
 }
 
 function pairTwitterUserIdWithPublicKey(id, publicKey) {
+  console.log('Pairing your public key with Hermes API.');
+  if (typeof publicKey === 'undefined') {
+    console.log('Refusing to pair undefined key.');
+    return;
+  }
   var xhr = new XMLHttpRequest();
   xhr.open('GET', `https://hermes.teamhtp.com/api/v1/twitter/public_key/update?twitter_user_id=${id}&public_key=${encodeURIComponent(publicKey)}`, true);
   xhr.send();
@@ -175,7 +180,6 @@ eventHandlers.directMessage = (event) => {
 eventHandlers._userId = (event) => {
   myTwitterId = event.data.data;
   pairTwitterUserIdWithPublicKey(myTwitterId, getMyPublicKey());
-  console.log('Pairing your public key with Hermes API.');
   //console.log(myTwitterId);
 };
 

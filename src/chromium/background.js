@@ -30,7 +30,6 @@ function generateAndStoreKeyPairLocalStorage() {
   });
   runOptionsLogic();
   console.log('Generating and storing new key pair');
-  return keyPair;
 }
 
 function checkAndGeneratePublicKeyWorkingKeyPair() {
@@ -97,13 +96,13 @@ actionHandlers.changeIcon = (msg, sender, sendResponse) => {
 
 actionHandlers.regenKeyPair = (msg, sender, sendResponse) => {
   //TODO: #7
-  var keyPair = generateAndStoreKeyPairLocalStorage();
+  generateAndStoreKeyPairLocalStorage();
   chrome.tabs.query({}, (tabs) => {
     for (var i = 0; i < tabs.length; ++i) {
       chrome.tabs.sendMessage(tabs[i].id, {
         action: 'keyPair',
-        publicKey: keyPair.publicKey,
-        secretKey: keyPair.secretKey
+        publicKey: workingKeyPair.publicKey,
+        secretKey: workingKeyPair.secretKey
       });
     }
   });
