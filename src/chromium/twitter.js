@@ -199,26 +199,36 @@ eventHandlers.directMessage = (event) => {
   if (isHermesMessage) {
     var hermesA = event.data.text.split('\n')[0].substring(9);
     var hermesB = event.data.text.split('\n')[1].substring(9);
-    try {
-      if (isOwnMessage) {
-        window.postMessage({ type: 'directMessage_r', id: event.data.id, text: decryptMessageForSelf(hermesB), own: isOwnMessage, success: true }, '*');
-      }
-      else {
-        window.postMessage({ type: 'directMessage_r', id: event.data.id, text: decryptMessage(hermesA), own: isOwnMessage, success: true }, '*');
-      }
-    }
-    catch (err) {
-      if (!isOwnMessage) {
-        lookupAttempts[event.data.id] = lookupAttempts[event.data.id] || 0;
-        if (lookupAttempts[event.data.id] < 2) {
-          lookupAttempts[event.data.id]++;
-          lookupTwitterId(event.data.sender_id);
-        }
-      }
-      window.postMessage({ type: 'directMessage_r', id: event.data.id, text: '', own: isOwnMessage, success: false }, '*');
-    }
+
     if (event.data.now) {
       upgrade();
+    }
+
+    var decryptedMessage = '';
+    var decryptSuccess = false;
+    if (isOwnMessage) {
+      decryptedMessage = decryptMessageForSelf(hermesB);
+      decryptSuccess = !!decryptedMessage;
+    }
+    else {
+      decryptedMessage = decryptMessage(hermesA);
+      decryptSuccess = !!decryptedMessage;
+    }
+
+    window.postMessage({
+      type: 'directMessage_r',
+      id: event.data.id,
+      text: decryptSuccess ? decryptedMessage : event.data.text,
+      own: isOwnMessage,
+      success: decryptSuccess
+    },'*');
+
+    if (!decryptSuccess && !isOwnMessage) {
+      lookupAttempts[event.data.id] = lookupAttempts[event.data.id] || 0;
+      if (lookupAttempts[event.data.id] < 2) {
+        lookupAttempts[event.data.id]++;
+        lookupTwitterId(event.data.sender_id);
+      }
     }
   }
   else if (!isOwnMessage && isLatestReceivedMessage && event.data.now) {
