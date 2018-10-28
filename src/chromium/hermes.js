@@ -18,6 +18,10 @@ function getTheirPublicKey() {
   return theirPublicKey;
 }
 
+function setTheirPublicKey(newPublicKey) {
+  theirPublicKey = newPublicKey;
+}
+
 function getMyPublicKey() {
   return keyPair.publicKey;
 }
