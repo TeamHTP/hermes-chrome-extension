@@ -145,7 +145,7 @@ window.addEventListener('message', (event) => {
 
   if (event.data.type && event.data.type.indexOf('_r') !== event.data.type.length - 2) {
     // let port = chrome.runtime.connect();
-    if (eventHandlers.hasOwnProperty(event.data.type)) {
+    if (Object.prototype.hasOwnProperty.call(eventHandlers, event.data.type)) {
       eventHandlers[event.data.type](event);
     } else {
       console.log(`Received unhandled event: ${event.data.type}`);

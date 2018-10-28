@@ -131,7 +131,7 @@ actionHandlers.getKeyPair = (msg, sender, sendResponse) => {
 };
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (actionHandlers.hasOwnProperty(msg.action)) {
+  if (Object.prototype.hasOwnProperty.call(actionHandlers,msg.action)) {
     actionHandlers[msg.action](msg, sender, sendResponse);
   } else {
     console.log(`Received message with no handler: ${msg}`);

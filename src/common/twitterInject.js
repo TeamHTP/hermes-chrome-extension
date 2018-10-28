@@ -4,7 +4,7 @@ function findDMTextbox() {
   let i;
   for (i = 0; i < comps.length; i += 1) {
     for (const j in comps[i].instances) {
-      if (comps[i].instances[j].instance.attr.hasOwnProperty('composerEditorSelector') && comps[i].instances[j].instance.attr.composerEditorSelector === '.DMComposer-editor') {
+      if (Object.prototype.hasOwnProperty.call(comps[i].instances[j].instance.attr, 'composerEditorSelector') && comps[i].instances[j].instance.attr.composerEditorSelector === '.DMComposer-editor') {
         return comps[i].instances[j];
       }
     }
@@ -17,8 +17,8 @@ function findSendDMComponent() {
   for (i = 0; i < comps.length; i += 1) {
     for (const j in comps[i].instances) {
       for (const k in comps[i].instances[j].events) {
-        if (comps[i].instances[j].events[k].type.indexOf('uiDMSendMessage') != -1) {
-          if (comps[i].instances[j].instance.attr.hasOwnProperty('noShowError')) {
+        if (comps[i].instances[j].events[k].type.indexOf('uiDMSendMessage') !== -1) {
+          if (Object.prototype.hasOwnProperty.call(comps[i].instances[j].instance.attr, 'noShowError')) {
             return comps[i].instances[j];
           }
         }
