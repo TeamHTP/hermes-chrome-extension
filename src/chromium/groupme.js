@@ -22,7 +22,7 @@ eventHandlers['groupMessageService.create'] = (event) => {
 };
 
 eventHandlers['loadMessagesService.loadLatest'] = (event) => {
-  console.log(event.data.returned);
+  //console.log(event.data.returned);
   if (event.data.returned) {
     for (var i = 0; i < event.data.returned.length; i++) {
       var isOwnMessage = event.data.returned[i].sender_id == myGroupmeId;
@@ -41,13 +41,19 @@ eventHandlers['loadMessagesService.loadLatest'] = (event) => {
   }, '*');
 };
 
+eventHandlers['sessionService.currentUser'] = (event) => {
+  myGroupmeId = event.data.currentUser.id;
+  console.log(`Got current GroupMe ID: ${myGroupmeId}`);
+};
+
 window.addEventListener('message', (event) => {
-  if (event.source != window)
+  if (event.source != window) {
     return;
+  }
 
   if (event.data.type && event.data.context && event.data.context === 'injected') {
     //let port = chrome.runtime.connect();
-    if (eventHandlers.hasOwnProperty(event.data.type)) {
+    if (Object.prototype.hasOwnProperty.call(eventHandlers, event.data.type)) {
       eventHandlers[event.data.type](event);
     }
     else {

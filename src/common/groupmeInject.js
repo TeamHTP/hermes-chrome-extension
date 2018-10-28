@@ -64,5 +64,13 @@ const injectorWaitInterval = setInterval(() => {
 
     groupMessageCreateIntercept();
     loadMessageLoadLatestIntercept();
+    
+    angular.element(document.body).injector().get('sessionService').currentUser().then((currentUser) => {
+      window.postMessage({
+        type: 'sessionService.currentUser',
+        context: 'injected',
+        currentUser: currentUser
+      }, '*');
+    });
   }
 }, 500);
