@@ -5,17 +5,15 @@ const defaultOptions = {
     type: 'boolean',
     default: false,
     value: false,
-    disabled: (options) => {
-      return options.masterPassword.value.length == 0;
-    },
+    disabled: options => options.masterPassword.value.length == 0,
     onUpdate: (options) => {
       if (options.encryptKey.value && workingKeyPair.secretKey) {
         storageLocation.remove('secretKey');
         storageLocation.set({
-          encryptedSecretKey: HermesCrypto.encryptSecret(workingKeyPair.secretKey, workingMasterPassword)
+          encryptedSecretKey: HermesCrypto.encryptSecret(workingKeyPair.secretKey, workingMasterPassword),
         });
       }
-    }
+    },
   },
   masterPassword: {
     title: 'Master password',
@@ -28,8 +26,7 @@ const defaultOptions = {
         // Value is 'unknown' (not stored) and encryptKey is disabled
         // Set password back to default
         options.masterPassword.value = options.masterPassword.default;
-      }
-      else if (options.masterPassword.value === options.masterPassword.default && options.encryptKey.value) {
+      } else if (options.masterPassword.value === options.masterPassword.default && options.encryptKey.value) {
         // Value is default (not set) and encryption key is enabled
         // Set password to 'unknown'
         options.masterPassword.value = 'unknown';
@@ -40,7 +37,7 @@ const defaultOptions = {
         workingMasterPassword = options.masterPassword.value;
         options.masterPassword.value = 'unknown';
       }
-    }
+    },
   },
   rememberMasterPassword: {
     title: 'Remember master password',
@@ -48,9 +45,7 @@ const defaultOptions = {
     type: 'boolean',
     default: true,
     value: true,
-    disabled: (options) => {
-      return options.masterPassword.value.length == 0;
-    }
+    disabled: options => options.masterPassword.value.length == 0,
   },
   keyStorageLocation: {
     title: 'Secret key storage location',
@@ -58,10 +53,10 @@ const defaultOptions = {
     type: 'selection',
     options: ['Local', 'Chrome sync'],
     default: 0,
-    value: 0
-  }
+    value: 0,
+  },
 };
-let options = {};
+const options = {};
 let storageLocation = chrome.storage.lcoal;
 
 function resetOptions() {
@@ -71,19 +66,17 @@ function resetOptions() {
 
 function queryOptions(callback) {
   chrome.storage.local.get(['options'], (result) => {
-    var optionsFoundInStorage = result.hasOwnProperty('options');
-    for (var optionKey in defaultOptions) {
+    const optionsFoundInStorage = result.hasOwnProperty('options');
+    for (const optionKey in defaultOptions) {
       if (optionsFoundInStorage) {
         options[optionKey] = result.options[optionKey] || defaultOptions[optionKey];
-      }
-      else {
+      } else {
         options[optionKey] = defaultOptions[optionKey];
       }
     }
     if (options.keyStorageLocation.value == 0) {
       storageLocation = chrome.storage.local;
-    }
-    else if (options.keyStorageLocation.value == 0) {
+    } else if (options.keyStorageLocation.value == 0) {
       storageLocation = chrome.storage.sync;
     }
     runOptionsLogic();
@@ -92,15 +85,13 @@ function queryOptions(callback) {
 }
 
 function runOptionsLogic() {
-  for (var optionKey in defaultOptions) {
-    var option = options[optionKey];
+  for (const optionKey in defaultOptions) {
+    const option = options[optionKey];
     if (defaultOptions[optionKey].hasOwnProperty('disabled') && typeof defaultOptions[optionKey].disabled === 'function') {
-      option._disabled = defaultOptions[optionKey].disabled(options)
-    }
-    else if (option.hasOwnProperty('disabled') && typeof !!option.disabled === 'boolean') {
+      option._disabled = defaultOptions[optionKey].disabled(options);
+    } else if (option.hasOwnProperty('disabled') && typeof !!option.disabled === 'boolean') {
       option._disabled = option.disabled;
-    }
-    else {
+    } else {
       option._disabled = false;
     }
     if (option._disabled) {
@@ -113,8 +104,8 @@ function runOptionsLogic() {
 }
 
 function runSaveLogic() {
-  for (var optionKey in defaultOptions) {
-    var option = options[optionKey];
+  for (const optionKey in defaultOptions) {
+    const option = options[optionKey];
     if (defaultOptions[optionKey].hasOwnProperty('onSave') && typeof defaultOptions[optionKey].onUpdate === 'function') {
       defaultOptions[optionKey].onSave(options);
     }
@@ -129,7 +120,7 @@ function updateOption(key, value) {
   options[key].value = value;
   runOptionsLogic();
   runSaveLogic();
-  chrome.storage.local.set({ options: options });
+  chrome.storage.local.set({ options });
   return true;
 }
 

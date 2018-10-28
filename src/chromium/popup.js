@@ -1,10 +1,10 @@
-var disabled = false;
+let disabled = false;
 
 function sendGenerateRequest() {
   if (!disabled) {
     chrome.runtime.sendMessage({ action: 'regenKeyPair' });
     disabled = true;
-    var oldButtonText = document.getElementById('generateKeyButton').innerHTML;
+    const oldButtonText = document.getElementById('generateKeyButton').innerHTML;
     document.getElementById('generateKeyButton').innerHTML = 'New keys generated!';
     setTimeout(() => {
       document.getElementById('generateKeyButton').innerHTML = oldButtonText;

@@ -1,9 +1,11 @@
-const { box, secretbox, hash, randomBytes } = require('tweetnacl');
+const {
+  box, secretbox, hash, randomBytes,
+} = require('tweetnacl');
 const {
   decodeUTF8,
   encodeUTF8,
   encodeBase64,
-  decodeBase64
+  decodeBase64,
 } = require('tweetnacl-util');
 
 const newMessageNonce = () => randomBytes(box.nonceLength);
@@ -22,10 +24,11 @@ module.exports.generateKeyPair = () => box.keyPair();
 /**
 Generates a key pair given a 32 byte secret key
 */
-module.exports.generateKeyPairFromSecretKey = (secretKey) => box.keyPair.fromSecretKey(secretKey);
+module.exports.generateKeyPairFromSecretKey = secretKey => box.keyPair.fromSecretKey(secretKey);
 
 /**
-Returns a base64 string with the encrypted message given a UTF8 message, their public key in base64 and our secret key in base64
+Returns a base64 string with the encrypted message given a UTF8 message, their public key in base64
+and our secret key in base64
 The first 24 bytes of the encoded message will be the nonce
 */
 module.exports.encryptMessage = (message, theirPublicKeyBase64, mySecretKeyBase64) => {
@@ -36,7 +39,12 @@ module.exports.encryptMessage = (message, theirPublicKeyBase64, mySecretKeyBase6
   const mySecretKeyUint8Array = decodeBase64(mySecretKeyBase64);
   const messageUint8 = decodeUTF8(message);
   // Encrypt
-  const encryptedMessage = box(messageUint8, nonce, theirPublicKeyUint8Array, mySecretKeyUint8Array);
+  const encryptedMessage = box(
+    messageUint8,
+    nonce,
+    theirPublicKeyUint8Array,
+    mySecretKeyUint8Array,
+  );
   // Prepend encrypted message with nonce
   const fullMessage = new Uint8Array(nonce.length + encryptedMessage.length);
   fullMessage.set(nonce);
@@ -57,10 +65,15 @@ module.exports.decryptMessage = (messageWithNonce, theirPublicKeyBase64, mySecre
   const nonce = messageWithNonceUint8Array.slice(0, box.nonceLength);
   const message = messageWithNonceUint8Array.slice(
     box.nonceLength,
-    messageWithNonce.length
+    messageWithNonce.length,
   );
   // Decrypt message
-  const decryptedMessage = box.open(message, nonce, theirPublicKeyUint8Array, mySecretKeyUint8Array);
+  const decryptedMessage = box.open(
+    message,
+    nonce,
+    theirPublicKeyUint8Array,
+    mySecretKeyUint8Array,
+  );
   if (!decryptedMessage) {
     throw new Error('Could not decrypt message');
   }
@@ -79,7 +92,7 @@ module.exports.encryptSecret = (secret, key) => {
   fullSecret.set(encryptedSecret, nonce.length);
 
   return encodeBase64(fullSecret);
-}
+};
 
 module.exports.decryptSecret = (secretWithNonce, key) => {
   const secretWithNonceUint8Array = decodeBase64(secretWithNonce);
@@ -88,7 +101,7 @@ module.exports.decryptSecret = (secretWithNonce, key) => {
   const nonce = secretWithNonceUint8Array.slice(0, secretbox.nonceLength);
   const secret = secretWithNonceUint8Array.slice(
     secretbox.nonceLength,
-    secretWithNonce.length
+    secretWithNonce.length,
   );
 
   const decryptedSecret = secretbox.open(secret, nonce, keyUint8Array);
@@ -97,15 +110,11 @@ module.exports.decryptSecret = (secretWithNonce, key) => {
   }
   // Return secret as UTF8
   return encodeUTF8(decryptedSecret);
-}
+};
 
-module.exports.hash64 = (raw) => {
-  return encodeBase64(hash(decodeUTF8(raw)));
-}
+module.exports.hash64 = raw => encodeBase64(hash(decodeUTF8(raw)));
 
-module.exports.hash32 = (raw) => {
-  return encodeBase64(hash(decodeUTF8(raw)).slice(0, 32));
-}
+module.exports.hash32 = raw => encodeBase64(hash(decodeUTF8(raw)).slice(0, 32));
 
 module.exports.decodeUTF8 = decodeUTF8;
 module.exports.encodeUTF8 = encodeUTF8;

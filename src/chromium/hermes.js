@@ -1,9 +1,9 @@
-var keyPair = {
+const keyPair = {
   publicKey: '',
-  secretKey: ''
+  secretKey: '',
 };
-var theirPublicKey = '';
-var downgraded = false;
+const theirPublicKey = '';
+let downgraded = false;
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === 'keyPair') {
@@ -27,69 +27,67 @@ function getMySecretKey() {
 }
 
 function encryptMessage(message) {
-  var encryptedMessage = '';
+  let encryptedMessage = '';
   try {
     encryptedMessage = HermesCrypto.encryptMessage(message, getTheirPublicKey(), getMySecretKey());
-  }
-  catch(e) {
+  } catch (e) {
     return false;
   }
   return encryptedMessage;
 }
 
 function encryptMessageForSelf(message) {
-  var encryptedMessage = '';
+  let encryptedMessage = '';
   try {
-    encryptedMessage = HermesCrypto.encryptMessage(message, getMyPublicKey(), getMySecretKey());}
-  catch(e) {
+    encryptedMessage = HermesCrypto.encryptMessage(message, getMyPublicKey(), getMySecretKey());
+  } catch (e) {
     return false;
   }
   return encryptedMessage;
 }
 
 function decryptMessage(message) {
-  var decryptedMessage = '';
+  let decryptedMessage = '';
   try {
-    decryptedMessage = HermesCrypto.decryptMessage(message, getTheirPublicKey(), getMySecretKey());}
-  catch(e) {
+    decryptedMessage = HermesCrypto.decryptMessage(message, getTheirPublicKey(), getMySecretKey());
+  } catch (e) {
     return false;
   }
   return decryptedMessage;
 }
 
 function decryptMessageForSelf(message) {
-  var decryptedMessage = '';
+  let decryptedMessage = '';
   try {
-    decryptedMessage = HermesCrypto.decryptMessage(message, getMyPublicKey(), getMySecretKey());}
-  catch(e) {
+    decryptedMessage = HermesCrypto.decryptMessage(message, getMyPublicKey(), getMySecretKey());
+  } catch (e) {
     return false;
   }
   return decryptedMessage;
-}
-
-function cryptoTest() {
-  var testStr = 'Hermes123!@#';
-  var encrypted = encryptMessage(testStr);
-  if (encrypted && decryptMessage(encrypted) == testStr) {
-    upgrade();
-  }
-  else {
-    downgrade();
-  }
-}
-
-function downgrade() {
-  downgraded = true;
-  chrome.runtime.sendMessage({
-    action: 'changeIcon',
-    value: 'unlocked'
-  });
 }
 
 function upgrade() {
   downgraded = false;
   chrome.runtime.sendMessage({
     action: 'changeIcon',
-    value: 'locked'
+    value: 'locked',
   });
+}
+
+function downgrade() {
+  downgraded = true;
+  chrome.runtime.sendMessage({
+    action: 'changeIcon',
+    value: 'unlocked',
+  });
+}
+
+function cryptoTest() {
+  const testStr = 'Hermes123!@#';
+  const encrypted = encryptMessage(testStr);
+  if (encrypted && decryptMessage(encrypted) === testStr) {
+    upgrade();
+  } else {
+    downgrade();
+  }
 }

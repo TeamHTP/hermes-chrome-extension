@@ -1,13 +1,10 @@
 const assert = require('assert');
-const crypto = require('../src/common/crypto.js');
 const {
-  decodeUTF8,
-  encodeUTF8,
   encodeBase64,
-  decodeBase64
 } = require('tweetnacl-util');
+const crypto = require('../src/common/crypto.js');
 
-let tests = [];
+const tests = [];
 
 function test(testFunc) {
   console.log(`Running test: ${testFunc.name}`);
@@ -17,7 +14,7 @@ function test(testFunc) {
 
 function runTests() {
   let i;
-  for (i = 0; i < tests.length; i++) {
+  for (i = 0; i < tests.length; i += 1) {
     test(tests[i]);
   }
   console.log(`${i} test(s) ran`);
@@ -28,8 +25,16 @@ function encryptDecrypt() {
   const theirKeyPair = crypto.generateKeyPair();
   const messageUTF8 = 'Hello world 1234!@#$';
 
-  const encryptedBase64 = crypto.encryptMessage(messageUTF8, encodeBase64(theirKeyPair.publicKey), encodeBase64(myKeyPair.secretKey));
-  const decryptedUTF8 = crypto.decryptMessage(encryptedBase64, encodeBase64(theirKeyPair.publicKey), encodeBase64(myKeyPair.secretKey));
+  const encryptedBase64 = crypto.encryptMessage(
+    messageUTF8,
+    encodeBase64(theirKeyPair.publicKey),
+    encodeBase64(myKeyPair.secretKey),
+  );
+  const decryptedUTF8 = crypto.decryptMessage(
+    encryptedBase64,
+    encodeBase64(theirKeyPair.publicKey),
+    encodeBase64(myKeyPair.secretKey),
+  );
 
   console.log(`Message to encrypt: ${messageUTF8}`);
   console.log(`Encrypted b64: ${encryptedBase64}`);
