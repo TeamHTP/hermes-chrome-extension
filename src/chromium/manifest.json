@@ -30,6 +30,7 @@
       "matches": ["*://twitter.com/*"],
       "js": [
         "crypto.js",
+        "hermes.js",
         "twitter.js"
       ],
       "run_at": "document_start"
