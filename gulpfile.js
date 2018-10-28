@@ -8,7 +8,7 @@ const packageJSON = require('./package.json');
 
 gulp.task('clean', () => del(['dist']));
 
-gulp.task('lint', () => gulp.src(['**/*.s', '!node_modules/**'])
+gulp.task('lint', () => gulp.src(['**/*.js', '!node_modules/**'])
   .pipe(eslint())
   .pipe(eslint.format())
   .pipe(eslint.failAfterError()));
