@@ -45,3 +45,6 @@ gulp.task('chromium-webpack', () => {
 
 gulp.task('build-chromium', gulp.series('chromium-common', 'chromium-assets', 'chromium-spec', 'chromium-manifest-version', 'chromium-webpack'));
 gulp.task('clean-build-chromium', gulp.series('clean', 'build-chromium'));
+
+gulp.task('build', gulp.series('build-chromium'));
+gulp.task('clean-build', gulp.series('clean', 'build'));

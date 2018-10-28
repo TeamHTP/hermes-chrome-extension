@@ -4,7 +4,11 @@
   "description": "Drop-in encryption for your favorite social network.",
   "main": "",
   "scripts": {
-    "test": "node tools/test.js"
+    "test": "node tools/test.js",
+    "clean": "gulp clean",
+    "clean-build-chromium": "gulp clean-build-chromium",
+    "clean-build": "gulp clean-build",
+    "build": "gulp build"
   },
   "author": "TeamHTP",
   "license": "GPL-3.0",
@@ -16,6 +20,7 @@
     "del": "^3.0.0",
     "gulp": "^4.0.0",
     "gulp-bump": "^3.1.1",
+    "gulp-cli": "^2.0.1",
     "webpack": "^4.21.0",
     "webpack-cli": "^3.1.2",
     "webpack-stream": "^5.1.1"
