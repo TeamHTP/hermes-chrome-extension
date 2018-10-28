@@ -1,78 +1,10 @@
-var keyPair = {
-  publicKey: '',
-  secretKey: ''
-};
 var myTwitterId = '';
-var theirPublicKey = '';
 var lookupAttempts = {};
-var downgraded = false;
 var eventHandlers = {};
 var latestReceivedMessage = {
   id: -1,
   text: ''
 };
-
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.action === 'keyPair') {
-    keyPair.publicKey = msg.publicKey;
-    keyPair.secretKey = msg.secretKey;
-  }
-});
-
-chrome.runtime.sendMessage({ action: 'getKeyPair' });
-
-function getTheirPublicKey() {
-  return theirPublicKey;
-}
-
-function getMyPublicKey() {
-  return keyPair.publicKey;
-}
-
-function getMySecretKey() {
-  return keyPair.secretKey;
-}
-
-function encryptMessage(message) {
-  var encryptedMessage = '';
-  try {
-    encryptedMessage = HermesCrypto.encryptMessage(message, getTheirPublicKey(), getMySecretKey());
-  }
-  catch(e) {
-    return false;
-  }
-  return encryptedMessage;
-}
-
-function encryptMessageForSelf(message) {
-  var encryptedMessage = '';
-  try {
-    encryptedMessage = HermesCrypto.encryptMessage(message, getMyPublicKey(), getMySecretKey());}
-  catch(e) {
-    return false;
-  }
-  return encryptedMessage;
-}
-
-function decryptMessage(message) {
-  var decryptedMessage = '';
-  try {
-    decryptedMessage = HermesCrypto.decryptMessage(message, getTheirPublicKey(), getMySecretKey());}
-  catch(e) {
-    return false;
-  }
-  return decryptedMessage;
-}
-
-function decryptMessageForSelf(message) {
-  var decryptedMessage = '';
-  try {
-    decryptedMessage = HermesCrypto.decryptMessage(message, getMyPublicKey(), getMySecretKey());}
-  catch(e) {
-    return false;
-  }
-  return decryptedMessage;
-}
 
 function lookupTwitterId(id) {
   var xhr = new XMLHttpRequest();
@@ -95,17 +27,6 @@ function lookupTwitterId(id) {
   };
 }
 
-function cryptoTest() {
-  var testStr = 'Hermes123!@#';
-  var encrypted = encryptMessage(testStr);
-  if (encrypted && decryptMessage(encrypted) == testStr) {
-    upgrade();
-  }
-  else {
-    downgrade();
-  }
-}
-
 function pairTwitterUserIdWithPublicKey(id, publicKey) {
   console.log('Pairing your public key with Hermes API.');
   if (typeof publicKey === 'undefined') {
@@ -115,22 +36,6 @@ function pairTwitterUserIdWithPublicKey(id, publicKey) {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', `https://hermes.teamhtp.com/api/v1/twitter/public_key/update?twitter_user_id=${id}&public_key=${encodeURIComponent(publicKey)}`, true);
   xhr.send();
-}
-
-function downgrade() {
-  downgraded = true;
-  chrome.runtime.sendMessage({
-    action: 'changeIcon',
-    value: 'unlocked'
-  });
-}
-
-function upgrade() {
-  downgraded = false;
-  chrome.runtime.sendMessage({
-    action: 'changeIcon',
-    value: 'locked'
-  });
 }
 
 eventHandlers.uiDMSendMessage = (event) => {
@@ -179,10 +84,7 @@ eventHandlers.uiDMDialogOpenedConversation = (event) => {
 };
 
 eventHandlers.notInDMConversation = (event) => {
-  chrome.runtime.sendMessage({
-    action: 'changeIcon',
-    value: 'unsupported'
-  });
+  downgrade();
 };
 
 eventHandlers.directMessage = (event) => {
