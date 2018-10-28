@@ -12,14 +12,14 @@ var latestReceivedMessage = {
   text: ''
 };
 
-chrome.runtime.sendMessage({ action: 'getKeyPair' });
-
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === 'keyPair') {
     keyPair.publicKey = msg.publicKey;
     keyPair.secretKey = msg.secretKey;
   }
 });
+
+chrome.runtime.sendMessage({ action: 'getKeyPair' });
 
 function getTheirPublicKey() {
   return theirPublicKey;
@@ -39,7 +39,7 @@ function encryptMessage(message) {
     encryptedMessage = HermesCrypto.encryptMessage(message, getTheirPublicKey(), getMySecretKey());
   }
   catch(e) {
-
+    return false;
   }
   return encryptedMessage;
 }
