@@ -55,7 +55,7 @@ var listener = (event) => {
       }
 
       var encryptedIcon = `
-      <span class="DirectMessage-actio hermes-iconn">
+      <span class="DirectMessage-action hermes-icon">
         <button type="button" class="js-tooltip" title="Encrypted with Hermes" data-message-id="${event.data.id}" aria-hidden="false">
           <span class="Icon Icon--protected" style="color: inherit;"></span>
         </button>
@@ -107,11 +107,14 @@ var attemptDecryptMessages = (t, e) => {
   setTimeout(() => {
     var messages = $('.DirectMessage');
     for (var i = 0; i < messages.length; i++) {
-      var id = $(messages[i]).attr('data-message-id');
-      var sender_id = $(messages[i]).attr('data-sender-id');
       var text = $(messages[i]).find('p.js-tweet-text').html();
       if (!$(messages[i]).find('p.js-tweet-text').hasClass('hermes-decrypted') && typeof text != 'undefined') {
-        window.postMessage({ type: 'directMessage', id: id, sender_id: sender_id, text: text }, '*');
+        var id = $(messages[i]).attr('data-message-id');
+        var sender_id = $(messages[i]).attr('data-sender-id');
+        var timestampEl = $(messages[i]).find('._timestamp');
+        var timestamp = timestampEl.attr('data-time');
+        var now = timestampEl.html().toLowerCase().indexOf('now') != -1;
+        window.postMessage({ type: 'directMessage', id: id, sender_id: sender_id, text: text, timestamp: timestamp, now: now }, '*');
       }
     }
   }, 100);

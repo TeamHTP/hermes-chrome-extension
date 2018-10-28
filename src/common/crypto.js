@@ -1,4 +1,4 @@
-const { box, randomBytes } = require('tweetnacl');
+const { box, secretbox, hash, randomBytes } = require('tweetnacl');
 const {
   decodeUTF8,
   encodeUTF8,
@@ -6,7 +6,9 @@ const {
   decodeBase64
 } = require('tweetnacl-util');
 
-const newNonce = () => randomBytes(box.nonceLength);
+const newMessageNonce = () => randomBytes(box.nonceLength);
+
+const newSecretNonce = () => randomBytes(secretbox.nonceLength);
 
 /**
 Generates a new key pair
@@ -28,7 +30,7 @@ The first 24 bytes of the encoded message will be the nonce
 */
 module.exports.encryptMessage = (message, theirPublicKeyBase64, mySecretKeyBase64) => {
   // Generate a nonce
-  const nonce = newNonce();
+  const nonce = newMessageNonce();
   // Decode strings to Uint8Arrays
   const theirPublicKeyUint8Array = decodeBase64(theirPublicKeyBase64);
   const mySecretKeyUint8Array = decodeBase64(mySecretKeyBase64);
@@ -65,6 +67,45 @@ module.exports.decryptMessage = (messageWithNonce, theirPublicKeyBase64, mySecre
   // Return message as UTF8
   return encodeUTF8(decryptedMessage);
 };
+
+module.exports.encryptSecret = (secret, key) => {
+  const nonce = newSecretNonce();
+  const secretUint8Array = decodeUTF8(secret);
+  const keyUint8Array = decodeBase64(key);
+
+  const encryptedSecret = secretbox(secretUint8Array, nonce, keyUint8Array);
+  const fullSecret = new Uint8Array(nonce.length + encryptedSecret.length);
+  fullSecret.set(nonce);
+  fullSecret.set(encryptedSecret, nonce.length);
+
+  return encodeBase64(fullSecret);
+}
+
+module.exports.decryptSecret = (secretWithNonce, key) => {
+  const secretWithNonceUint8Array = decodeBase64(secretWithNonce);
+  const keyUint8Array = decodeBase64(key);
+
+  const nonce = secretWithNonceUint8Array.slice(0, secretbox.nonceLength);
+  const secret = secretWithNonceUint8Array.slice(
+    secretbox.nonceLength,
+    secretWithNonce.length
+  );
+
+  const decryptedSecret = secretbox.open(secret, nonce, keyUint8Array);
+  if (!decryptedSecret) {
+    throw new Error('Could not decrypt secret');
+  }
+  // Return secret as UTF8
+  return encodeUTF8(decryptedSecret);
+}
+
+module.exports.hash64 = (raw) => {
+  return encodeBase64(hash(decodeUTF8(raw)));
+}
+
+module.exports.hash32 = (raw) => {
+  return encodeBase64(hash(decodeUTF8(raw)).slice(0, 32));
+}
 
 module.exports.decodeUTF8 = decodeUTF8;
 module.exports.encodeUTF8 = encodeUTF8;
