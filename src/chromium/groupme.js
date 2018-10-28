@@ -22,22 +22,35 @@ eventHandlers['groupMessageService.create'] = (event) => {
 };
 
 eventHandlers['loadMessagesService.loadLatest'] = (event) => {
-  //console.log(event.data.returned);
+  console.log(event.data.returned);
   if (event.data.returned) {
-    for (var i = 0; i < event.data.returned.length; i++) {
-      var isOwnMessage = event.data.returned[i].sender_id == myGroupmeId;
+    event.data.returned.forEach((message) => {
+      var isOwnMessage = message.sender_id == myGroupmeId;
       if (isOwnMessage) {
-        event.data.returned[i].text = 'intercepted';
+        //message.text += '';
+        message.hermesMessage = true;
+        message.hermesSuccess = false;
       }
       else {
-        event.data.returned[i].text = 'intercepted';
+        //message.text += '';
+        message.hermesMessage = true;
+        message.hermesSuccess = false;
       }
-    }
+    });
   }
   window.postMessage({
     type: 'loadMessagesService.loadLatest',
     context: 'extension',
     returned: event.data.returned
+  }, '*');
+};
+
+eventHandlers['messagesService.loadChat'] = (event) => {
+  console.log(event.data.e);
+  window.postMessage({
+    type: 'messagesService.loadChat',
+    context: 'extension',
+    e: event.data.e
   }, '*');
 };
 
