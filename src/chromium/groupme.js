@@ -10,9 +10,6 @@ eventHandlers['groupMessageService.create'] = (event) => {
     event.data.a.text = messageToSend;
     event.data.r.lastMessage.text = messageToSend;
   }
-  else {
-
-  }
   window.postMessage({
     type: 'groupMessageService.create',
     context: 'extension',
