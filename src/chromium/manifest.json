@@ -34,9 +34,21 @@
         "twitter.js"
       ],
       "run_at": "document_start"
+    },
+    {
+      "matches": ["*://web.groupme.com/*"],
+      "js": [
+        "crypto.js",
+        "hermes.js",
+        "groupme.js"
+      ],
+      "run_at": "document_start"
     }
   ],
-  "web_accessible_resources": ["twitterInject.js"],
+  "web_accessible_resources": [
+    "twitterInject.js",
+    "groupmeInject.js"
+  ],
   "icons": {
     "16": "assets/locked.png",
     "32": "assets/locked2x.png",
